@@ -67,22 +67,176 @@ export function Header() {
             <Menu size={22} strokeWidth={1.75} />
           </button>
           <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetContent side="left" className="!bg-[var(--ek-bg-elevated)] w-[320px] shadow-2xl">
-              <SheetHeader>
-                <SheetTitle className="h-3 text-left">Ekim Craft</SheetTitle>
+            <SheetContent
+              side="left"
+              className="!bg-[var(--ek-bg-elevated)] flex w-[88vw] max-w-[340px] flex-col !p-0 shadow-2xl"
+            >
+              <SheetHeader className="sr-only">
+                <SheetTitle>Menü</SheetTitle>
               </SheetHeader>
-              <nav className="mt-8 flex flex-col">
-                {NAV.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="border-ek-line-2 hover:text-ek-terra border-b py-3 text-sm font-medium"
+
+              {/* User section — logged in vs guest */}
+              {isLoggedIn ? (
+                <div className="bg-ek-forest text-ek-cream px-5 pb-5 pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-ek-cream text-ek-forest flex h-12 w-12 shrink-0 items-center justify-center rounded-full font-serif text-lg">
+                      {(user.first_name || user.email)[0]?.toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium">
+                        {user.first_name || user.email.split("@")[0]}
+                      </div>
+                      <div className="text-ek-cream/60 truncate text-[11px]">{user.email}</div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-ek-forest text-ek-cream px-5 pb-5 pt-6">
+                  <div className="mono text-ek-cream/60 mb-3 uppercase">HOŞ GELDİN</div>
+                  <div className="mb-4 font-serif text-xl leading-tight">
+                    Siparişlerin ve
+                    <br />
+                    favorilerin için giriş yap
+                  </div>
+                  <div className="flex gap-2">
+                    <Link
+                      href="/giris"
+                      onClick={() => setMenuOpen(false)}
+                      className="bg-ek-terra hover:bg-ek-terra-2 flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-xs font-medium text-white"
+                    >
+                      <LogIn size={14} /> Giriş yap
+                    </Link>
+                    <Link
+                      href="/giris?mode=signup"
+                      onClick={() => setMenuOpen(false)}
+                      className="bg-ek-cream/10 hover:bg-ek-cream/20 flex flex-1 items-center justify-center gap-1.5 rounded-full px-4 py-2.5 text-xs font-medium"
+                    >
+                      <UserPlus size={14} /> Kaydol
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* Scrollable body */}
+              <div className="flex-1 overflow-y-auto">
+                {/* Categories */}
+                <div className="px-5 py-4">
+                  <div className="label mb-3">Kategoriler</div>
+                  <nav className="flex flex-col">
+                    {NAV.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMenuOpen(false)}
+                        className="border-ek-line-2 hover:text-ek-terra flex items-center justify-between border-b py-3 text-sm font-medium last:border-b-0"
+                      >
+                        <span>{item.label}</span>
+                        <span className="text-ek-ink-4">→</span>
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Account shortcuts — only when logged in */}
+                {isLoggedIn && (
+                  <div className="border-ek-line-2 border-t px-5 py-4">
+                    <div className="label mb-3">Hesabım</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <MobileMenuTile
+                        href="/hesap"
+                        icon={User}
+                        label="Hesabım"
+                        onClick={() => setMenuOpen(false)}
+                      />
+                      <MobileMenuTile
+                        href="/hesap/siparisler"
+                        icon={Package}
+                        label="Siparişlerim"
+                        onClick={() => setMenuOpen(false)}
+                      />
+                      <MobileMenuTile
+                        href="/hesap/favoriler"
+                        icon={Heart}
+                        label="Favorilerim"
+                        onClick={() => setMenuOpen(false)}
+                      />
+                      <MobileMenuTile
+                        href="/hesap/ayarlar"
+                        icon={Settings}
+                        label="Ayarlar"
+                        onClick={() => setMenuOpen(false)}
+                      />
+                    </div>
+                    {user.is_staff && (
+                      <Link
+                        href="/yonetim"
+                        onClick={() => setMenuOpen(false)}
+                        className="bg-ek-forest text-ek-cream hover:bg-ek-forest-2 mt-3 flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium"
+                      >
+                        <Settings size={14} /> Yönetim paneli
+                      </Link>
+                    )}
+                  </div>
+                )}
+
+                {/* Quick links */}
+                <div className="border-ek-line-2 border-t px-5 py-4">
+                  <div className="label mb-3">Yardım</div>
+                  <div className="flex flex-col text-sm">
+                    <Link
+                      href="/sss"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-ek-ink-2 hover:text-ek-ink py-1.5"
+                    >
+                      Sık sorulan sorular
+                    </Link>
+                    <Link
+                      href="/iletisim"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-ek-ink-2 hover:text-ek-ink py-1.5"
+                    >
+                      İletişim
+                    </Link>
+                    <Link
+                      href="/kargo"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-ek-ink-2 hover:text-ek-ink py-1.5"
+                    >
+                      Kargo & teslimat
+                    </Link>
+                    <Link
+                      href="/iade"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-ek-ink-2 hover:text-ek-ink py-1.5"
+                    >
+                      İade koşulları
+                    </Link>
+                    <Link
+                      href="/hakkimizda"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-ek-ink-2 hover:text-ek-ink py-1.5"
+                    >
+                      Hakkımızda
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer — logout for logged-in users */}
+              {isLoggedIn && (
+                <div className="border-ek-line-2 border-t px-5 py-3">
+                  <button
+                    onClick={() => {
+                      logout();
+                      setMenuOpen(false);
+                      router.push("/");
+                    }}
+                    className="text-ek-ink-3 hover:text-ek-ink flex w-full items-center gap-2 py-1.5 text-sm"
                   >
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
+                    <LogOut size={14} /> Çıkış yap
+                  </button>
+                </div>
+              )}
             </SheetContent>
           </Sheet>
 
@@ -247,5 +401,28 @@ export function Header() {
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+function MobileMenuTile({
+  href,
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  href: string;
+  icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="border-ek-line bg-ek-bg hover:border-ek-ink-3 flex items-center gap-2 rounded-lg border px-3 py-2.5 text-xs font-medium"
+    >
+      <Icon size={14} strokeWidth={1.75} />
+      <span className="truncate">{label}</span>
+    </Link>
   );
 }
