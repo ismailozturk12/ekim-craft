@@ -1,11 +1,12 @@
 "use client";
 
-import { Heart, LogIn, LogOut, Menu, Package, Search, Settings, ShoppingBag, User, UserPlus, X } from "lucide-react";
+import { Heart, LogIn, LogOut, Menu, Package, Search, Settings, ShoppingBag, User, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { CartDrawer } from "@/components/ekim/cart-drawer";
 import { Container } from "@/components/ekim/container";
+import { SearchDialog } from "@/components/ekim/search-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,8 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import { useAuth, useAuthHydrated } from "@/store/auth";
 import { itemCount, useCart } from "@/store/cart";
 
@@ -30,13 +29,10 @@ const NAV = [
   { label: "Dekor", href: "/kategori/dekor" },
 ];
 
-const POPULAR_SEARCHES = ["Ahşap tren", "İsim süsü", "Anahtarlık", "Duvar saati", "Yapboz", "Kupa"];
-
 export function Header() {
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchQ, setSearchQ] = useState("");
   const cartItems = useCart((s) => s.items);
   const openCart = useCart((s) => s.open);
   const count = itemCount(cartItems);
@@ -361,45 +357,7 @@ export function Header() {
 
       <CartDrawer />
 
-      {/* Search dialog */}
-      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="!bg-[var(--ek-bg-elevated)] top-[20%] max-w-2xl translate-y-0 p-0 shadow-2xl sm:top-[20%]">
-          <div className="border-ek-line-2 flex items-center gap-3 border-b px-5 py-4">
-            <Search size={20} className="text-ek-ink-3" />
-            <input
-              autoFocus
-              value={searchQ}
-              onChange={(e) => setSearchQ(e.target.value)}
-              placeholder="Ne arıyorsun?"
-              className="placeholder:text-ek-ink-4 flex-1 bg-transparent text-base outline-none"
-            />
-            <button
-              onClick={() => setSearchOpen(false)}
-              className="text-ek-ink-3 hover:text-ek-ink"
-            >
-              <X size={18} />
-            </button>
-          </div>
-          <div className="p-5">
-            <div className="eyebrow mb-3">POPÜLER ARAMALAR</div>
-            <div className="flex flex-wrap gap-2">
-              {POPULAR_SEARCHES.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => {
-                    setSearchQ(q);
-                  }}
-                  className={cn(
-                    "border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3 rounded-full border px-3 py-1.5 text-xs transition-colors"
-                  )}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
 }
