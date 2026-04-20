@@ -321,39 +321,45 @@ class Command(BaseCommand):
                 },
             )
             # Varyantlar: size x color kombinasyonları
-            product.variants.all().delete()
+            # --reset dışında mevcut varyantlara dokunma (admin'in stok düzenlemesi korunsun)
             for size_label, size_stock in data["sizes"]:
                 for color_name, color_hex in data["colors"]:
-                    # Stok rengi başına eşit paylaştırılır
                     per_color = max(1, size_stock // max(1, len(data["colors"])))
-                    ProductVariant.objects.create(
+                    sku = f"{data['id'].upper()}-{slugify(size_label)}-{slugify(color_name)}"[:60]
+                    ProductVariant.objects.get_or_create(
                         product=product,
-                        size_label=size_label,
-                        color_name=color_name,
-                        color_hex=color_hex,
-                        sku=f"{data['id'].upper()}-{slugify(size_label)}-{slugify(color_name)}"[:60],
-                        stock=per_color,
+                        sku=sku,
+                        defaults={
+                            "size_label": size_label,
+                            "color_name": color_name,
+                            "color_hex": color_hex,
+                            "stock": per_color,
+                        },
                     )
         self.stdout.write(self.style.SUCCESS(f"✓ {len(PRODUCTS)} ürün + varyantlar"))
 
         # ----- Yorumlar -----
-        Review.objects.filter(product__sku__in=[r["pid"].upper() for r in REVIEWS]).delete()
+        # Mevcut yorumları silme (kullanıcı yorumları korunsun); aynı başlık+yazar kombinasyonu varsa atla
+        created = 0
         for r in REVIEWS:
             try:
                 prod = Product.objects.get(sku=r["pid"].upper())
             except Product.DoesNotExist:
                 continue
-            Review.objects.create(
+            Review.objects.get_or_create(
                 product=prod,
                 author_name=r["user"],
-                rating=r["rating"],
                 title=r["title"],
-                body=r["body"],
-                is_approved=True,
-                is_verified_purchase=True,
-                helpful=8,
+                defaults={
+                    "rating": r["rating"],
+                    "body": r["body"],
+                    "is_approved": True,
+                    "is_verified_purchase": True,
+                    "helpful": 8,
+                },
             )
-        self.stdout.write(self.style.SUCCESS(f"✓ {len(REVIEWS)} yorum"))
+            created += 1
+        self.stdout.write(self.style.SUCCESS(f"✓ {created} yorum (mevcutlar korundu)"))
 
         # ----- Kuponlar -----
         for c in COUPONS:

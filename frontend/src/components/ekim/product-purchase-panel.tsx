@@ -19,6 +19,7 @@ import { Placeholder } from "@/components/ekim/placeholder";
 import { formatTL } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/store/cart";
+import { useWishlist } from "@/store/wishlist";
 
 interface Variant {
   id: number;
@@ -90,7 +91,9 @@ export function ProductPurchasePanel({
   );
   const [selectedColor, setSelectedColor] = useState<string | undefined>(colors[0]?.[0]);
   const [qty, setQty] = useState(1);
-  const [wished, setWished] = useState(false);
+  const wishlistHas = useWishlist((s) => s.has);
+  const toggleWishlist = useWishlist((s) => s.toggle);
+  const wished = wishlistHas(slug);
 
   // Özel ölçü
   const [customSizeOn, setCustomSizeOn] = useState(false);
@@ -457,14 +460,14 @@ export function ProductPurchasePanel({
           Sepete ekle · {formatTL(totalPrice)}
         </button>
         <button
-          onClick={() => setWished((w) => !w)}
+          onClick={() => toggleWishlist(slug)}
           className={cn(
             "flex aspect-square items-center justify-center rounded-full border transition-colors",
             wished
               ? "bg-ek-terra border-ek-terra text-white"
               : "border-ek-line hover:border-ek-ink"
           )}
-          aria-label="Favorilere ekle"
+          aria-label={wished ? "Favorilerden çıkar" : "Favorilere ekle"}
         >
           <Heart size={18} className={wished ? "fill-current" : ""} />
         </button>

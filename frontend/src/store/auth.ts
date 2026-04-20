@@ -12,6 +12,7 @@ export interface AuthUser {
   phone?: string;
   is_staff?: boolean;
   date_joined?: string;
+  marketing_opt_in?: boolean;
 }
 
 interface AuthState {

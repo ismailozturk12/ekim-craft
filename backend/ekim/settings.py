@@ -28,6 +28,14 @@ if env_file.exists():
 SECRET_KEY = env("DJANGO_SECRET_KEY", default="dev-insecure-change-me")
 DEBUG = env("DJANGO_DEBUG")
 ALLOWED_HOSTS = env("DJANGO_ALLOWED_HOSTS")
+SITE_URL = env("SITE_URL", default="https://ekimcraft.com")
+
+if not DEBUG and SECRET_KEY == "dev-insecure-change-me":
+    from django.core.exceptions import ImproperlyConfigured
+
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY environment variable is required in production (DEBUG=False)."
+    )
 
 # ---------- Applications ----------
 DJANGO_APPS = [

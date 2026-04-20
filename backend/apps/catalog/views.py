@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Avg, Count
 from rest_framework import filters as drf_filters
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -72,7 +72,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             has_purchased = product.orderitem_set.filter(
                 order__user=request.user,
                 order__status__in=["paid", "confirmed", "in_production", "shipped", "delivered"],
-            ).exists() if hasattr(product, "orderitem_set") else False
+            ).exists()
 
             review = Review.objects.create(
                 product=product,
@@ -86,8 +86,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             )
             # Aggregate update
             stats = product.reviews.filter(is_approved=True).aggregate(
-                avg=__import__("django.db.models", fromlist=["Avg"]).Avg("rating"),
-                n=__import__("django.db.models", fromlist=["Count"]).Count("id"),
+                avg=Avg("rating"),
+                n=Count("id"),
             )
             product.rating = round(stats["avg"] or 0, 2)
             product.review_count = stats["n"]

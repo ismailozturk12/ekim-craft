@@ -1,8 +1,13 @@
 from django.urls import path
 
-from .views import OrderViewSet, ReturnRequestViewSet
+from .views import OrderViewSet, ReturnRequestViewSet, validate_coupon
 
 urlpatterns = [
+    path(
+        "coupons/validate/",
+        validate_coupon,
+        name="coupon-validate",
+    ),
     path(
         "",
         OrderViewSet.as_view({"get": "list", "post": "create"}),

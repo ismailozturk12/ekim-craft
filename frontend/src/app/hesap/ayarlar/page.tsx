@@ -35,7 +35,7 @@ export default function SettingsPage() {
         last_name: user.last_name ?? "",
         phone: user.phone ?? "",
         email: user.email,
-        marketing_opt_in: false,
+        marketing_opt_in: user.marketing_opt_in ?? false,
       });
     }
   }, [user]);

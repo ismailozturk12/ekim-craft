@@ -94,6 +94,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "size_type",
             "cover_image",
             "is_visible",
+            "updated_at",
         )
 
     def get_cover_image(self, obj):

@@ -172,7 +172,41 @@ class CheckoutSerializer(serializers.Serializer):
         elif method == Order.ShippingMethod.EXPRESS:
             shipping = Decimal("89.00")
 
-        total = subtotal + shipping
+        # Kupon uygula
+        from django.utils import timezone
+
+        from .models import Coupon
+
+        discount = Decimal("0.00")
+        coupon_obj = None
+        coupon_code = (validated_data.get("coupon_code") or "").strip().upper()
+        if coupon_code:
+            coupon_obj = Coupon.objects.filter(code__iexact=coupon_code, is_active=True).first()
+            if coupon_obj:
+                now = timezone.now()
+                valid = True
+                if coupon_obj.starts_at and coupon_obj.starts_at > now:
+                    valid = False
+                if coupon_obj.expires_at and coupon_obj.expires_at < now:
+                    valid = False
+                if (
+                    coupon_obj.usage_limit
+                    and coupon_obj.used_count >= coupon_obj.usage_limit
+                ):
+                    valid = False
+                if coupon_obj.min_order and subtotal < coupon_obj.min_order:
+                    valid = False
+                if not valid:
+                    coupon_obj = None
+            if coupon_obj:
+                if coupon_obj.type == Coupon.Type.PERCENT:
+                    discount = (subtotal * coupon_obj.value / Decimal("100")).quantize(Decimal("0.01"))
+                elif coupon_obj.type == Coupon.Type.FIXED:
+                    discount = min(subtotal, coupon_obj.value).quantize(Decimal("0.01"))
+                elif coupon_obj.type == Coupon.Type.FREE_SHIP:
+                    shipping = Decimal("0.00")
+
+        total = max(Decimal("0.00"), subtotal - discount + shipping)
 
         order = Order.objects.create(
             number=number,
@@ -185,9 +219,15 @@ class CheckoutSerializer(serializers.Serializer):
             shipping_address=validated_data["shipping_address"],
             subtotal=subtotal,
             shipping_cost=shipping,
+            discount=discount,
             total=total,
+            coupon=coupon_obj,
             note=validated_data.get("note", ""),
         )
+
+        if coupon_obj:
+            coupon_obj.used_count = (coupon_obj.used_count or 0) + 1
+            coupon_obj.save(update_fields=["used_count"])
 
         for entry in line_data:
             OrderItem.objects.create(

@@ -1,18 +1,54 @@
 "use client";
 
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, Minus, Plus, Trash2, X } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Container } from "@/components/ekim/container";
 import { EmptyState } from "@/components/ekim/empty-state";
 import { Placeholder, toneForProduct } from "@/components/ekim/placeholder";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { API_URL } from "@/lib/api/client";
 import { formatTL } from "@/lib/format";
 import { cartTotals, useCart } from "@/store/cart";
 
 export default function CartPage() {
-  const { items, removeItem, updateQty } = useCart();
-  const { subtotal, shipping, total, freeShippingDelta } = cartTotals(items);
+  const { items, removeItem, updateQty, coupon, applyCoupon, removeCoupon } = useCart();
+  const { subtotal, shipping, discount, total, freeShippingDelta } = cartTotals(items, coupon);
+  const [couponInput, setCouponInput] = useState("");
+  const [applying, setApplying] = useState(false);
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code) return;
+    setApplying(true);
+    try {
+      const res = await fetch(`${API_URL}/api/v1/orders/coupons/validate/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        toast.error(data.detail ?? "Geçersiz kod");
+        return;
+      }
+      applyCoupon({
+        code: data.code,
+        name: data.name,
+        type: data.type,
+        discount: parseFloat(data.discount),
+        free_shipping: data.free_shipping,
+      });
+      setCouponInput("");
+      toast.success(`${data.code} kodu uygulandı`);
+    } catch {
+      toast.error("Kupon doğrulanamadı");
+    } finally {
+      setApplying(false);
+    }
+  };
 
   return (
     <>
@@ -103,9 +139,21 @@ export default function CartPage() {
                     <span className="text-ek-ink-3">Ara toplam</span>
                     <span>{formatTL(subtotal)}</span>
                   </div>
+                  {coupon && discount > 0 && (
+                    <div className="text-ek-ok flex justify-between">
+                      <span>İndirim ({coupon.code})</span>
+                      <span>−{formatTL(discount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between">
                     <span className="text-ek-ink-3">Kargo</span>
-                    <span>{shipping === 0 ? "Ücretsiz" : formatTL(shipping)}</span>
+                    <span>
+                      {shipping === 0 ? (
+                        <span className="text-ek-ok">Ücretsiz{coupon?.free_shipping && " (kupon)"}</span>
+                      ) : (
+                        formatTL(shipping)
+                      )}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-ek-ink-3">KDV (dahil)</span>
@@ -119,15 +167,43 @@ export default function CartPage() {
 
                 <div className="border-ek-line-2 mt-5 border-t pt-5">
                   <div className="eyebrow mb-2">İNDİRİM KODU</div>
-                  <div className="flex gap-2">
-                    <input
-                      placeholder="Kodu gir"
-                      className="border-ek-line bg-ek-bg-elevated flex-1 rounded-md border px-3 py-2 text-sm"
-                    />
-                    <button className="border-ek-line hover:border-ek-ink rounded-md border px-4 text-sm">
-                      Uygula
-                    </button>
-                  </div>
+                  {coupon ? (
+                    <div className="bg-ek-ok/10 border-ek-ok/30 flex items-center justify-between rounded-md border px-3 py-2.5 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 size={14} className="text-ek-ok" />
+                        <span className="font-medium">{coupon.code}</span>
+                        <span className="text-ek-ink-3 text-xs">{coupon.name}</span>
+                      </div>
+                      <button
+                        onClick={removeCoupon}
+                        className="text-ek-ink-3 hover:text-ek-warn"
+                        aria-label="Kuponu kaldır"
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleApplyCoupon();
+                        }}
+                        placeholder="Kodu gir"
+                        autoCapitalize="characters"
+                        className="border-ek-line bg-ek-bg-elevated focus:border-ek-forest flex-1 rounded-md border px-3 py-2 text-sm uppercase outline-none"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={applying || !couponInput.trim()}
+                        className="border-ek-line hover:border-ek-ink flex items-center gap-1.5 rounded-md border px-4 text-sm disabled:opacity-40"
+                      >
+                        {applying && <Loader2 size={12} className="animate-spin" />}
+                        Uygula
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 <Link

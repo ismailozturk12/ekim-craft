@@ -9,6 +9,7 @@ import { Container } from "@/components/ekim/container";
 import { EmptyState } from "@/components/ekim/empty-state";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { API_URL } from "@/lib/api/client";
 import { formatTL } from "@/lib/format";
 import { apiErrorMessage, authedFetch, useAuth, useAuthHydrated } from "@/store/auth";
 import { cartTotals, useCart } from "@/store/cart";
@@ -25,8 +26,8 @@ interface AddressForm {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, clear } = useCart();
-  const { subtotal, shipping, total } = cartTotals(items);
+  const { items, clear, coupon } = useCart();
+  const { subtotal, shipping, discount, total } = cartTotals(items, coupon);
   const hydrated = useAuthHydrated();
   const user = useAuth((s) => s.user);
 
@@ -42,11 +43,8 @@ export default function CheckoutPage() {
     city: "",
   });
 
-  // Giriş yapmamış kullanıcıyı /giris'e yönlendir
+  // Giriş yapmışsa adres alanlarını otomatik doldur (misafir checkout serbest)
   useEffect(() => {
-    if (hydrated && !user) {
-      router.push("/giris?next=%2Fodeme");
-    }
     if (user) {
       setAddress((prev) => ({
         ...prev,
@@ -55,7 +53,7 @@ export default function CheckoutPage() {
         phone: prev.phone || user.phone || "",
       }));
     }
-  }, [hydrated, user, router]);
+  }, [user]);
 
   if (items.length === 0) {
     return (
@@ -76,6 +74,7 @@ export default function CheckoutPage() {
   const validateAddress = (): string | null => {
     if (!address.name.trim()) return "Ad soyad gerekli";
     if (!address.phone.trim()) return "Telefon gerekli";
+    if (!user && !address.email.trim()) return "E-posta gerekli (sipariş takibi için)";
     if (!address.line.trim()) return "Adres gerekli";
     if (!address.city.trim()) return "Şehir gerekli";
     return null;
@@ -84,32 +83,35 @@ export default function CheckoutPage() {
   const placeOrder = async () => {
     setPlacing(true);
     try {
-      const res = await authedFetch("/orders/", {
-        method: "POST",
-        body: JSON.stringify({
-          items: items.map((it) => ({
-            product_slug: it.slug,
-            qty: it.qty,
-            size: it.size ?? "",
-            color: it.color ?? "",
-            personalization: it.personalization ?? {},
-          })),
-          shipping_address: {
-            name: address.name,
-            phone: address.phone,
-            email: address.email || user?.email || "",
-            line: address.line,
-            city: address.city,
-          },
-          shipping_method: shippingMethod,
-          payment_method: paymentMethod,
-        }),
+      const body = JSON.stringify({
+        items: items.map((it) => ({
+          product_slug: it.slug,
+          qty: it.qty,
+          size: it.size ?? "",
+          color: it.color ?? "",
+          personalization: it.personalization ?? {},
+        })),
+        shipping_address: {
+          name: address.name,
+          phone: address.phone,
+          email: address.email || user?.email || "",
+          line: address.line,
+          city: address.city,
+        },
+        shipping_method: shippingMethod,
+        payment_method: paymentMethod,
+        coupon_code: coupon?.code ?? "",
       });
+      // Misafir checkout: authedFetch refresh akışı, anonim için ham fetch
+      const res = user
+        ? await authedFetch("/orders/", { method: "POST", body })
+        : await fetch(`${API_URL}/api/v1/orders/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body,
+          });
       if (!res.ok) {
         const msg = await apiErrorMessage(res);
-        if (res.status === 401) {
-          router.push("/giris?next=%2Fodeme");
-        }
         throw new Error(msg);
       }
       const order = (await res.json()) as { number: string };
@@ -366,6 +368,12 @@ export default function CheckoutPage() {
                   <span className="text-ek-ink-3">Ara toplam</span>
                   <span>{formatTL(subtotal)}</span>
                 </div>
+                {coupon && discount > 0 && (
+                  <div className="text-ek-ok flex justify-between">
+                    <span>İndirim ({coupon.code})</span>
+                    <span>−{formatTL(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-ek-ink-3">Kargo</span>
                   <span>{shipping === 0 ? "Ücretsiz" : formatTL(shipping)}</span>

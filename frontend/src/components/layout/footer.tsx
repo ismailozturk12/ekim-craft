@@ -19,16 +19,14 @@ const COLUMNS = [
       { label: "İletişim", href: "/iletisim" },
       { label: "Kargo & teslimat", href: "/kargo" },
       { label: "İade koşulları", href: "/iade" },
-      { label: "Sipariş takibi", href: "/hesap" },
+      { label: "Sipariş takibi", href: "/hesap/siparisler" },
     ],
   },
   {
     title: "Kurumsal",
     links: [
       { label: "Hakkımızda", href: "/hakkimizda" },
-      { label: "Atölye", href: "/atolye" },
-      { label: "Blog", href: "/blog" },
-      { label: "Basın", href: "/basin" },
+      { label: "İletişim", href: "/iletisim" },
     ],
   },
   {

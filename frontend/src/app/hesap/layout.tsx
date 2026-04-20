@@ -18,7 +18,7 @@ import { Container } from "@/components/ekim/container";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/store/auth";
+import { useAuth, useAuthHydrated } from "@/store/auth";
 
 const TABS = [
   { href: "/hesap", label: "Genel", icon: User },
@@ -34,13 +34,22 @@ const TABS = [
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const hydrated = useAuthHydrated();
   const user = useAuth((s) => s.user);
   const logout = useAuth((s) => s.logout);
 
   useEffect(() => {
+    if (!hydrated) return;
     if (!user) router.push(`/giris?next=${encodeURIComponent(pathname)}`);
-  }, [user, router, pathname]);
+  }, [hydrated, user, router, pathname]);
 
+  if (!hydrated) {
+    return (
+      <div className="bg-ek-bg flex min-h-screen items-center justify-center">
+        <div className="text-ek-ink-3 text-sm">Yükleniyor...</div>
+      </div>
+    );
+  }
   if (!user) return null;
 
   return (

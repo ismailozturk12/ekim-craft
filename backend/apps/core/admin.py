@@ -1,6 +1,22 @@
 from django.contrib import admin
 
-from .models import ApiKey, AuditLog, Setting, Webhook
+from .models import ApiKey, AuditLog, ContactMessage, NewsletterSubscriber, Setting, Webhook
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "name", "email", "subject", "is_handled")
+    list_filter = ("is_handled", "created_at")
+    search_fields = ("name", "email", "subject", "body")
+    readonly_fields = ("created_at",)
+
+
+@admin.register(NewsletterSubscriber)
+class NewsletterSubscriberAdmin(admin.ModelAdmin):
+    list_display = ("created_at", "email", "source", "confirmed_at", "unsubscribed_at")
+    list_filter = ("source",)
+    search_fields = ("email",)
+    readonly_fields = ("created_at",)
 
 
 @admin.register(Setting)

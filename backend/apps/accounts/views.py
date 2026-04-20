@@ -118,7 +118,10 @@ def password_reset_request(request):
         )
         # Dev'de console'a yaz, prod'da Resend
         try:
-            reset_url = f"{request.data.get('site_url', 'http://localhost:3000')}/sifre-sifirla/{token}"
+            from django.conf import settings as dj_settings
+
+            site_url = getattr(dj_settings, "SITE_URL", "").rstrip("/") or "https://ekimcraft.com"
+            reset_url = f"{site_url}/sifre-sifirla/{token}"
             send_mail(
                 "Ekim Craft — Şifreni sıfırla",
                 f"Aşağıdaki bağlantı ile şifreni sıfırla:\n\n{reset_url}\n\n1 saat içinde kullanılmazsa geçersiz olur.",

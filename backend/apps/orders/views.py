@@ -1,9 +1,11 @@
+from decimal import Decimal
+
 from django.utils import timezone
 from rest_framework import mixins, permissions, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 
-from .models import Order, OrderEvent, ReturnRequest
+from .models import Coupon, Order, OrderEvent, ReturnRequest
 from .serializers import (
     AdminOrderUpdateSerializer,
     AdminReturnUpdateSerializer,
@@ -14,6 +16,59 @@ from .serializers import (
     ReturnRequestDetailSerializer,
     ReturnRequestListSerializer,
 )
+
+
+@api_view(["POST"])
+@permission_classes([permissions.AllowAny])
+def validate_coupon(request):
+    """Kupon kodunu doğrular ve indirim tutarını hesaplar."""
+    code = (request.data.get("code") or "").strip().upper()
+    subtotal = Decimal(str(request.data.get("subtotal") or "0"))
+    if not code:
+        return Response({"valid": False, "detail": "Kod gerekli"}, status=400)
+
+    try:
+        coupon = Coupon.objects.get(code__iexact=code, is_active=True)
+    except Coupon.DoesNotExist:
+        return Response({"valid": False, "detail": "Geçersiz veya pasif kod"}, status=404)
+
+    now = timezone.now()
+    if coupon.starts_at and coupon.starts_at > now:
+        return Response({"valid": False, "detail": "Kod henüz aktif değil"}, status=400)
+    if coupon.expires_at and coupon.expires_at < now:
+        return Response({"valid": False, "detail": "Kodun süresi dolmuş"}, status=400)
+    if coupon.usage_limit and coupon.used_count >= coupon.usage_limit:
+        return Response({"valid": False, "detail": "Kod limiti doldu"}, status=400)
+    if coupon.min_order and subtotal < coupon.min_order:
+        return Response(
+            {
+                "valid": False,
+                "detail": f"En az {coupon.min_order} TL sipariş gerekir",
+                "min_order": str(coupon.min_order),
+            },
+            status=400,
+        )
+
+    discount = Decimal("0.00")
+    free_shipping = False
+    if coupon.type == Coupon.Type.PERCENT:
+        discount = (subtotal * coupon.value / Decimal("100")).quantize(Decimal("0.01"))
+    elif coupon.type == Coupon.Type.FIXED:
+        discount = min(subtotal, coupon.value).quantize(Decimal("0.01"))
+    elif coupon.type == Coupon.Type.FREE_SHIP:
+        free_shipping = True
+
+    return Response(
+        {
+            "valid": True,
+            "code": coupon.code,
+            "name": coupon.name or coupon.code,
+            "type": coupon.type,
+            "value": str(coupon.value),
+            "discount": str(discount),
+            "free_shipping": free_shipping,
+        }
+    )
 
 
 class OrderViewSet(

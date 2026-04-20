@@ -285,7 +285,7 @@ class AdminCouponViewSet(viewsets.ModelViewSet):
 @permission_classes([permissions.IsAuthenticated])
 def notifications_list(request):
     qs = Notification.objects.filter(
-        Q(user=request.user) | Q(for_staff=True) if request.user.is_staff else Q(user=request.user)
+        (Q(user=request.user) | Q(for_staff=True)) if request.user.is_staff else Q(user=request.user)
     ).order_by("-created_at")[:50]
 
     out = []
