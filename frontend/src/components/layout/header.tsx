@@ -363,7 +363,7 @@ export function Header() {
 
       {/* Search dialog */}
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="bg-ek-bg-card top-[20%] max-w-2xl translate-y-0 p-0 sm:top-[20%]">
+        <DialogContent className="!bg-[var(--ek-bg-elevated)] top-[20%] max-w-2xl translate-y-0 p-0 shadow-2xl sm:top-[20%]">
           <div className="border-ek-line-2 flex items-center gap-3 border-b px-5 py-4">
             <Search size={20} className="text-ek-ink-3" />
             <input
