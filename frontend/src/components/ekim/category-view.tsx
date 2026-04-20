@@ -1,6 +1,6 @@
 "use client";
 
-import { Grid3x3, LayoutGrid, List, Rows3, SlidersHorizontal, X } from "lucide-react";
+import { Grid3x3, LayoutGrid, List, RotateCcw, Rows3, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MasonryGrid } from "@/components/ekim/masonry-grid";
@@ -216,13 +216,46 @@ export function CategoryView({
         <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
           <SheetContent
             side="left"
-            className="!bg-[var(--ek-bg-elevated)] w-[85vw] max-w-[360px] overflow-y-auto shadow-2xl"
+            showCloseButton={false}
+            className="!bg-[var(--ek-bg-elevated)] flex w-[92vw] max-w-[400px] flex-col !gap-0 !p-0 shadow-2xl"
           >
-            <SheetHeader>
-              <SheetTitle className="h-3 text-left">Filtreler</SheetTitle>
+            <SheetHeader className="sr-only !p-0">
+              <SheetTitle>Filtreler</SheetTitle>
             </SheetHeader>
-            <div className="mt-4">
-              <FiltersHeader activeFilters={activeFilters} onReset={reset} />
+
+            {/* Sticky header */}
+            <div className="border-ek-line-2 bg-ek-bg-elevated sticky top-0 z-10 flex items-center justify-between border-b px-5 py-4">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal size={16} strokeWidth={1.75} />
+                <span className="text-base font-medium">Filtreler</span>
+                {activeFilters > 0 && (
+                  <span className="bg-ek-terra flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold text-white">
+                    {activeFilters}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                {activeFilters > 0 && (
+                  <button
+                    onClick={reset}
+                    className="text-ek-ink-3 hover:text-ek-warn flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] uppercase tracking-wider"
+                  >
+                    <RotateCcw size={11} />
+                    Sıfırla
+                  </button>
+                )}
+                <button
+                  onClick={() => setFiltersOpen(false)}
+                  aria-label="Kapat"
+                  className="hover:bg-ek-bg -mr-1 flex h-9 w-9 items-center justify-center rounded-full"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="flex-1 overflow-y-auto px-5 pb-28 pt-2">
               <FiltersBody
                 allColors={allColors}
                 customOnly={customOnly}
@@ -240,12 +273,19 @@ export function CategoryView({
                 selectedSizes={selectedSizes}
                 setSelectedSizes={setSelectedSizes}
                 toggleSet={toggleSet}
+                touchTargets
               />
+            </div>
+
+            {/* Sticky footer */}
+            <div className="border-ek-line-2 bg-ek-bg-elevated absolute inset-x-0 bottom-0 border-t px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <button
                 onClick={() => setFiltersOpen(false)}
-                className="bg-ek-ink text-ek-cream hover:bg-ek-ink-2 mt-6 w-full rounded-full py-3 text-sm font-medium"
+                className="bg-ek-ink text-ek-cream hover:bg-ek-forest w-full rounded-full py-3.5 text-sm font-medium"
               >
-                {filtered.length} ürünü göster
+                {filtered.length === 0
+                  ? "Sonuç bulunamadı"
+                  : `${filtered.length} ürünü göster`}
               </button>
             </div>
           </SheetContent>
@@ -425,6 +465,7 @@ interface FiltersBodyProps {
   selectedSizes: Set<string>;
   setSelectedSizes: (s: Set<string>) => void;
   toggleSet: (set: Set<string>, value: string, setter: (s: Set<string>) => void) => void;
+  touchTargets?: boolean;
 }
 
 function FiltersBody({
@@ -444,43 +485,64 @@ function FiltersBody({
   selectedSizes,
   setSelectedSizes,
   toggleSet,
+  touchTargets = false,
 }: FiltersBodyProps) {
+  // Touch mode = mobile; arttırılmış targetler
+  const swatchCls = touchTargets ? "h-10 w-10" : "h-7 w-7";
+  const sizeCls = touchTargets
+    ? "min-w-11 min-h-11 rounded-lg px-3.5 py-2 text-sm"
+    : "min-w-9 rounded-full px-3 py-1.5 text-xs";
+  const checkboxRow = touchTargets
+    ? "flex cursor-pointer items-center gap-3 py-2.5 text-sm"
+    : "flex cursor-pointer items-center gap-2 text-sm";
+  const checkboxCls = touchTargets
+    ? "h-5 w-5 accent-[var(--ek-forest)]"
+    : "accent-[var(--ek-forest)]";
+
   return (
     <>
       {/* Özellik */}
       <section className="border-ek-line-2 border-b pb-5">
         <div className="label mb-3">Özellik</div>
-        <div className="space-y-2">
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
+        <div className={touchTargets ? "divide-ek-line-2 divide-y" : "space-y-2"}>
+          <label className={checkboxRow}>
             <input
               type="checkbox"
               checked={customOnly}
               onChange={(e) => setCustomOnly(e.target.checked)}
+              className={checkboxCls}
             />
-            Kişiselleştirilebilir
+            <span className="flex-1">Kişiselleştirilebilir</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <label className={checkboxRow}>
             <input
               type="checkbox"
               checked={saleOnly}
               onChange={(e) => setSaleOnly(e.target.checked)}
+              className={checkboxCls}
             />
-            İndirimde
+            <span className="flex-1">İndirimde</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <label className={checkboxRow}>
             <input
               type="checkbox"
               checked={inStockOnly}
               onChange={(e) => setInStockOnly(e.target.checked)}
+              className={checkboxCls}
             />
-            Stokta var
+            <span className="flex-1">Stokta var</span>
           </label>
         </div>
       </section>
 
       {/* Fiyat */}
       <section className="border-ek-line-2 border-b py-5">
-        <div className="label mb-3">Fiyat aralığı</div>
+        <div className="label mb-3 flex items-center justify-between">
+          <span>Fiyat aralığı</span>
+          <span className="text-ek-ink-3 font-normal normal-case">
+            ≤ {formatTL(priceMax)}
+          </span>
+        </div>
         <input
           type="range"
           min={200}
@@ -488,12 +550,15 @@ function FiltersBody({
           step={100}
           value={priceMax}
           onChange={(e) => setPriceMax(Number(e.target.value))}
-          className="w-full"
+          className={cn(
+            "w-full",
+            touchTargets && "h-6",
+          )}
           style={{ accentColor: "var(--ek-forest)" }}
         />
         <div className="mono mt-1.5 flex justify-between">
           <span>{formatTL(200)}</span>
-          <span>≤ {formatTL(priceMax)}</span>
+          <span>{formatTL(6000)}</span>
         </div>
       </section>
 
@@ -501,7 +566,7 @@ function FiltersBody({
       {allColors.length > 0 && (
         <section className="border-ek-line-2 border-b py-5">
           <div className="label mb-3">Renk</div>
-          <div className="flex flex-wrap gap-2">
+          <div className={cn("flex flex-wrap", touchTargets ? "gap-2.5" : "gap-2")}>
             {allColors.map(([name, hex]) => {
               const active = selectedColors.has(name);
               return (
@@ -510,10 +575,11 @@ function FiltersBody({
                   onClick={() => toggleSet(selectedColors, name, setSelectedColors)}
                   title={name}
                   className={cn(
-                    "h-7 w-7 rounded-full transition-transform",
+                    "rounded-full transition-transform",
+                    swatchCls,
                     active
-                      ? "ring-ek-ink ring-offset-ek-bg ring-2 ring-offset-2"
-                      : "border-ek-line hover:scale-110 border"
+                      ? "ring-ek-ink ring-offset-ek-bg-elevated ring-2 ring-offset-2"
+                      : "border-ek-line hover:scale-110 border",
                   )}
                   style={{ background: hex }}
                   aria-label={name}
@@ -521,21 +587,27 @@ function FiltersBody({
               );
             })}
           </div>
+          {touchTargets && selectedColors.size > 0 && (
+            <div className="mono mt-2 text-ek-ink-3">
+              Seçili: {Array.from(selectedColors).join(", ")}
+            </div>
+          )}
         </section>
       )}
 
       {/* Marka */}
       <section className="border-ek-line-2 border-b py-5">
         <div className="label mb-3">Marka</div>
-        <div className="space-y-2">
+        <div className={touchTargets ? "divide-ek-line-2 divide-y" : "space-y-2"}>
           {BRANDS.map((b) => (
-            <label key={b} className="flex cursor-pointer items-center gap-2 text-sm">
+            <label key={b} className={checkboxRow}>
               <input
                 type="checkbox"
                 checked={selectedBrands.has(b)}
                 onChange={() => toggleSet(selectedBrands, b, setSelectedBrands)}
+                className={checkboxCls}
               />
-              {b}
+              <span className="flex-1">{b}</span>
             </label>
           ))}
         </div>
@@ -544,7 +616,7 @@ function FiltersBody({
       {/* Beden */}
       <section className="pt-5">
         <div className="label mb-3">Beden</div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className={cn("flex flex-wrap", touchTargets ? "gap-2" : "gap-1.5")}>
           {SIZES.map((s) => {
             const active = selectedSizes.has(s);
             return (
@@ -552,10 +624,11 @@ function FiltersBody({
                 key={s}
                 onClick={() => toggleSet(selectedSizes, s, setSelectedSizes)}
                 className={cn(
-                  "min-w-9 rounded-full border px-3 py-1.5 text-xs transition-colors",
+                  "border transition-colors",
+                  sizeCls,
                   active
                     ? "bg-ek-ink text-ek-cream border-ek-ink"
-                    : "border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3"
+                    : "border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3",
                 )}
               >
                 {s}
