@@ -191,33 +191,6 @@ export default async function Home() {
           </Container>
         )}
 
-        {/* CTA — kişiye özel */}
-        <Container as="section" className="pb-20">
-          <div className="bg-ek-forest text-ek-cream grid gap-10 overflow-hidden rounded-2xl p-10 md:grid-cols-2 md:p-16">
-            <div>
-              <div className="mono text-ek-cream/70 mb-4">KİŞİYE ÖZEL</div>
-              <h2 className="h-1 text-ek-cream mb-5">
-                İsmini, fotoğrafını,
-                <br />
-                tasarımını ekle.
-              </h2>
-              <p className="text-ek-cream/80 mb-8 max-w-md leading-relaxed">
-                Oyuncaktan anahtarlığa, kupadan tabloya — birçok ürünü isim, fotoğraf ya da özel tasarımla
-                hazırlıyoruz.
-              </p>
-              <Link
-                href="/tasarim"
-                className="bg-ek-terra hover:bg-ek-terra-2 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-white transition-colors"
-              >
-                Tasarım stüdyosu →
-              </Link>
-            </div>
-            <div className="overflow-hidden rounded-xl">
-              <Placeholder tone="terra" label="özel tasarım" ratio="4 / 3" />
-            </div>
-          </div>
-        </Container>
-
         {/* FEATURE STRIP */}
         <Container as="section" className="pb-20">
           <div className="bg-ek-bg-elevated border-ek-line-2 grid gap-6 rounded-xl border p-8 md:grid-cols-4">

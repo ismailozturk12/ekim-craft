@@ -39,7 +39,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/gizlilik", priority: 0.3, freq: "monthly" },
     { path: "/mesafeli-satis", priority: 0.3, freq: "monthly" },
     { path: "/kullanim-sartlari", priority: 0.3, freq: "monthly" },
-    { path: "/tasarim", priority: 0.7, freq: "weekly" },
   ];
 
   return [

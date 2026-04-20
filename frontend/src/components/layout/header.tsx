@@ -28,7 +28,6 @@ const NAV = [
   { label: "Saat", href: "/kategori/saat" },
   { label: "Aksesuar", href: "/kategori/aksesuar" },
   { label: "Dekor", href: "/kategori/dekor" },
-  { label: "Kişiye Özel", href: "/tasarim" },
 ];
 
 const POPULAR_SEARCHES = ["Ahşap tren", "İsim süsü", "Anahtarlık", "Duvar saati", "Yapboz", "Kupa"];
