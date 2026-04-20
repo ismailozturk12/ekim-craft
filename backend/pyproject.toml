@@ -1,0 +1,49 @@
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+exclude = [".venv", "migrations", "staticfiles"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",      # pycodestyle + pyflakes
+    "I",                 # isort
+    "B",                 # bugbear
+    "UP",                # pyupgrade
+    "DJ",                # django-specific
+    "SIM",               # simplify
+    "RUF",               # ruff
+]
+ignore = [
+    "E501",              # line length (black handles)
+    "B008",              # function call default
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/migrations/*" = ["E501", "F401"]
+"**/settings.py" = ["E402", "F405"]
+
+[tool.black]
+line-length = 110
+target-version = ["py311"]
+exclude = '''
+/(
+    \.venv
+  | migrations
+  | staticfiles
+)/
+'''
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "ekim.settings"
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-ra --strict-markers --reuse-db"
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+strict = true
+ignore_missing_imports = true
+exclude = ["migrations", ".venv"]
+
+[tool.django-stubs]
+django_settings_module = "ekim.settings"

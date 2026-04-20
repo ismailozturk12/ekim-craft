@@ -1,0 +1,248 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================================
+   EKİM CRAFT — Design Tokens
+   Kaynak: design_handoff_ekimcraft/design/styles.css
+   Palet: krem + terracotta + forest + sage + cream
+   Tipografi: Fraunces (serif) + Inter Tight (sans) + JetBrains Mono
+   ============================================================ */
+
+:root {
+  /* Ekim Craft paleti */
+  --ek-bg: #f4efe6;
+  --ek-bg-elevated: #faf6ee;
+  --ek-bg-card: #fffdf8;
+  --ek-ink: #1a1f1c;
+  --ek-ink-2: #3d4540;
+  --ek-ink-3: #6b7269;
+  --ek-ink-4: #9aa098;
+  --ek-line: #d9d2c3;
+  --ek-line-2: #e8e1d1;
+  --ek-forest: #2d4a3e;
+  --ek-forest-2: #1f372d;
+  --ek-terra: #c17b5a;
+  --ek-terra-2: #a05f40;
+  --ek-sage: #8a9a7b;
+  --ek-cream: #ede4cf;
+  --ek-warn: #b8462e;
+  --ek-ok: #4a6b3e;
+  --ek-rose: #d89bb5;
+  --ek-blue: #8aa3b8;
+
+  /* shadcn token mapping (Ekim paletinden türetildi) */
+  --background: var(--ek-bg);
+  --foreground: var(--ek-ink);
+  --card: var(--ek-bg-card);
+  --card-foreground: var(--ek-ink);
+  --popover: var(--ek-bg-card);
+  --popover-foreground: var(--ek-ink);
+  --primary: var(--ek-forest);
+  --primary-foreground: var(--ek-bg-elevated);
+  --secondary: var(--ek-cream);
+  --secondary-foreground: var(--ek-ink);
+  --muted: var(--ek-bg-elevated);
+  --muted-foreground: var(--ek-ink-3);
+  --accent: var(--ek-terra);
+  --accent-foreground: var(--ek-bg-elevated);
+  --destructive: var(--ek-warn);
+  --border: var(--ek-line);
+  --input: var(--ek-line);
+  --ring: var(--ek-terra);
+  --chart-1: var(--ek-terra);
+  --chart-2: var(--ek-forest);
+  --chart-3: var(--ek-sage);
+  --chart-4: var(--ek-ink);
+  --chart-5: var(--ek-terra-2);
+
+  /* Radius (tasarım token'ı) */
+  --radius: 0.5rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-pill: 9999px;
+
+  /* Gölge */
+  --shadow-sm: 0 1px 2px rgba(26, 31, 28, 0.05), 0 1px 3px rgba(26, 31, 28, 0.04);
+  --shadow: 0 4px 16px rgba(26, 31, 28, 0.06), 0 1px 3px rgba(26, 31, 28, 0.04);
+  --shadow-lg: 0 24px 60px rgba(26, 31, 28, 0.12), 0 6px 20px rgba(26, 31, 28, 0.08);
+
+  /* Sidebar (admin) */
+  --sidebar: var(--ek-forest);
+  --sidebar-foreground: var(--ek-cream);
+  --sidebar-primary: var(--ek-terra);
+  --sidebar-primary-foreground: var(--ek-bg-elevated);
+  --sidebar-accent: var(--ek-forest-2);
+  --sidebar-accent-foreground: var(--ek-bg-elevated);
+  --sidebar-border: var(--ek-forest-2);
+  --sidebar-ring: var(--ek-terra);
+}
+
+/* Density varyantları — data-density attr ile switch */
+[data-density="cozy"] {
+  --spacing-base: 0.875;
+}
+[data-density="spacious"] {
+  --spacing-base: 1.125;
+}
+
+/* Tema varyantları */
+[data-theme="ink"],
+.dark {
+  --ek-bg: #1a1f1c;
+  --ek-bg-elevated: #232925;
+  --ek-bg-card: #2a302c;
+  --ek-ink: #f0ebe0;
+  --ek-ink-2: #c8c3b8;
+  --ek-ink-3: #8e9389;
+  --ek-ink-4: #5a5e58;
+  --ek-line: #353b37;
+  --ek-line-2: #2a302c;
+  --ek-forest: #a8c0a0;
+  --ek-terra: #e09a78;
+  --ek-sage: #b5c4a8;
+  --ek-cream: #3a4039;
+}
+
+[data-theme="petal"] {
+  --ek-bg: #f5ede5;
+  --ek-forest: #5a3d4e;
+  --ek-terra: #d18b6a;
+  --ek-sage: #b08fa0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Ekim özel renkler (opsiyonel Tailwind sınıfları için) */
+  --color-ek-forest: var(--ek-forest);
+  --color-ek-forest-2: var(--ek-forest-2);
+  --color-ek-terra: var(--ek-terra);
+  --color-ek-terra-2: var(--ek-terra-2);
+  --color-ek-sage: var(--ek-sage);
+  --color-ek-cream: var(--ek-cream);
+  --color-ek-ink: var(--ek-ink);
+  --color-ek-ink-2: var(--ek-ink-2);
+  --color-ek-ink-3: var(--ek-ink-3);
+  --color-ek-line: var(--ek-line);
+  --color-ek-rose: var(--ek-rose);
+  --color-ek-blue: var(--ek-blue);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-serif: var(--font-fraunces);
+  --font-sans: var(--font-inter-tight);
+  --font-mono: var(--font-jetbrains);
+  --font-heading: var(--font-fraunces);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --shadow-sm: 0 1px 2px rgba(26, 31, 28, 0.05), 0 1px 3px rgba(26, 31, 28, 0.04);
+  --shadow: 0 4px 16px rgba(26, 31, 28, 0.06);
+  --shadow-lg: 0 24px 60px rgba(26, 31, 28, 0.12);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+    color: var(--foreground);
+    background: var(--background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+
+  /* Typography yardımcıları — tasarım handoff'undan */
+  .h-display {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 104px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+  }
+  .h-display em {
+    font-style: italic;
+    color: var(--ek-terra);
+  }
+  .h-1 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(36px, 4vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+  }
+  .h-2 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: clamp(28px, 2.6vw, 40px);
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+  .h-3 {
+    font-family: var(--font-serif);
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.2;
+  }
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ek-ink-3);
+  }
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: var(--ek-ink-3);
+  }
+
+  ::selection {
+    background: var(--ek-terra);
+    color: var(--ek-bg-elevated);
+  }
+}

@@ -1,0 +1,70 @@
+# ---------- Python / Django ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.tox/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/backend/media/
+/backend/staticfiles/
+/backend/.env
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# ---------- Node / Next.js ----------
+node_modules/
+.pnpm-store/
+.next/
+out/
+build/
+dist/
+.turbo/
+
+# Next.js runtime
+/frontend/.env.local
+/frontend/.env*.local
+/frontend/next-env.d.ts
+/frontend/.vercel
+
+# ---------- Env ----------
+.env
+.env.local
+.env.*.local
+
+# ---------- Editor / OS ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# ---------- Build artefacts ----------
+*.tsbuildinfo
+/shared/openapi.json
+
+# ---------- Uploads / tmp ----------
+/uploads/
+/tmp/
