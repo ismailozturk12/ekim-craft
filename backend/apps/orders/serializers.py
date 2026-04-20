@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from django.db import transaction
+from django.db import models, transaction
 from django.utils.crypto import get_random_string
 from rest_framework import serializers
 
 from apps.catalog.models import Product, ProductVariant
 
-from .models import Order, OrderEvent, OrderItem
+from .models import Order, OrderEvent, OrderItem, ReturnRequest, ReturnRequestItem
 
 
 # ------------------------------------------------------------
@@ -230,3 +230,252 @@ class AdminOrderUpdateSerializer(serializers.ModelSerializer):
             "note",
         )
         extra_kwargs = {k: {"required": False} for k in fields}
+
+
+# ------------------------------------------------------------
+# Returns
+# ------------------------------------------------------------
+class ReturnRequestItemSerializer(serializers.ModelSerializer):
+    name_snapshot = serializers.CharField(source="order_item.name_snapshot", read_only=True)
+    size_snapshot = serializers.CharField(source="order_item.size_snapshot", read_only=True)
+    color_snapshot = serializers.CharField(source="order_item.color_snapshot", read_only=True)
+    product_slug = serializers.SlugField(source="order_item.product.slug", read_only=True)
+
+    class Meta:
+        model = ReturnRequestItem
+        fields = (
+            "id",
+            "order_item",
+            "product_slug",
+            "name_snapshot",
+            "size_snapshot",
+            "color_snapshot",
+            "qty",
+            "unit_price",
+        )
+
+
+class ReturnRequestListSerializer(serializers.ModelSerializer):
+    order_number = serializers.CharField(source="order.number", read_only=True)
+    items_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ReturnRequest
+        fields = (
+            "id",
+            "number",
+            "order_number",
+            "status",
+            "resolution",
+            "reason",
+            "refund_amount",
+            "items_count",
+            "created_at",
+        )
+
+    def get_items_count(self, obj):
+        return obj.items.count()
+
+
+class ReturnRequestDetailSerializer(serializers.ModelSerializer):
+    items = ReturnRequestItemSerializer(many=True, read_only=True)
+    order_number = serializers.CharField(source="order.number", read_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True, allow_null=True)
+
+    class Meta:
+        model = ReturnRequest
+        fields = (
+            "id",
+            "number",
+            "order",
+            "order_number",
+            "user",
+            "user_email",
+            "status",
+            "resolution",
+            "reason",
+            "customer_note",
+            "admin_note",
+            "refund_amount",
+            "return_shipping_label",
+            "tracking_number",
+            "processed_at",
+            "items",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "number",
+            "status",
+            "admin_note",
+            "refund_amount",
+            "return_shipping_label",
+            "tracking_number",
+            "processed_at",
+        )
+
+
+class ReturnRequestCreateSerializer(serializers.Serializer):
+    """Müşterinin iade talebi oluşturması için input."""
+
+    order_number = serializers.CharField()
+    resolution = serializers.ChoiceField(
+        choices=ReturnRequest.Resolution.choices, default=ReturnRequest.Resolution.REFUND
+    )
+    reason = serializers.ChoiceField(choices=ReturnRequest.Reason.choices)
+    customer_note = serializers.CharField(required=False, allow_blank=True, default="")
+    items = serializers.ListField(
+        child=serializers.DictField(),
+        allow_empty=False,
+        help_text="[{order_item_id: int, qty: int}]",
+    )
+
+    def validate(self, attrs):
+        request = self.context["request"]
+        user = request.user if request.user.is_authenticated else None
+
+        try:
+            order = Order.objects.get(number=attrs["order_number"])
+        except Order.DoesNotExist as exc:
+            raise serializers.ValidationError({"order_number": "Sipariş bulunamadı"}) from exc
+
+        if user and order.user_id and order.user_id != user.id:
+            raise serializers.ValidationError({"order_number": "Bu siparişe erişim yok"})
+
+        if order.status not in {
+            Order.Status.PAID,
+            Order.Status.CONFIRMED,
+            Order.Status.SHIPPED,
+            Order.Status.DELIVERED,
+        }:
+            raise serializers.ValidationError(
+                {"order_number": "Bu sipariş durumunda iade açılamaz"}
+            )
+
+        order_item_ids = [int(x.get("order_item_id", 0)) for x in attrs["items"]]
+        order_items = {oi.id: oi for oi in order.items.filter(id__in=order_item_ids)}
+        if len(order_items) != len(set(order_item_ids)):
+            raise serializers.ValidationError({"items": "Geçersiz kalem"})
+
+        # Mevcut iade talebinde çift kalem olmamalı (stok kontrolü basit)
+        total_requested = {oi_id: 0 for oi_id in order_items}
+        for raw in attrs["items"]:
+            oi_id = int(raw.get("order_item_id", 0))
+            qty = int(raw.get("qty", 0))
+            if qty <= 0:
+                raise serializers.ValidationError({"items": "Adet 1'den az olamaz"})
+            total_requested[oi_id] = total_requested.get(oi_id, 0) + qty
+
+        for oi_id, qty in total_requested.items():
+            oi = order_items[oi_id]
+            already_requested = (
+                ReturnRequestItem.objects.filter(
+                    order_item=oi,
+                    request__status__in=[
+                        ReturnRequest.Status.PENDING,
+                        ReturnRequest.Status.APPROVED,
+                        ReturnRequest.Status.RECEIVED,
+                        ReturnRequest.Status.REFUNDED,
+                    ],
+                ).aggregate(total=models.Sum("qty"))["total"]
+                or 0
+            )
+            if already_requested + qty > oi.qty:
+                raise serializers.ValidationError(
+                    {"items": f"'{oi.name_snapshot}' için toplam adet ürün sayısını aşıyor"}
+                )
+
+        attrs["_order"] = order
+        attrs["_order_items"] = order_items
+        return attrs
+
+    @transaction.atomic
+    def create(self, validated_data):
+        from django.utils.timezone import now
+
+        order = validated_data["_order"]
+        order_items = validated_data["_order_items"]
+
+        number = _generate_return_number()
+        refund_amount = Decimal("0.00")
+
+        req = ReturnRequest.objects.create(
+            number=number,
+            order=order,
+            user=order.user,
+            status=ReturnRequest.Status.PENDING,
+            resolution=validated_data["resolution"],
+            reason=validated_data["reason"],
+            customer_note=validated_data.get("customer_note", ""),
+        )
+
+        for raw in validated_data["items"]:
+            oi = order_items[int(raw["order_item_id"])]
+            qty = int(raw["qty"])
+            ReturnRequestItem.objects.create(
+                request=req, order_item=oi, qty=qty, unit_price=oi.unit_price
+            )
+            refund_amount += oi.unit_price * qty
+
+        req.refund_amount = refund_amount
+        req.save(update_fields=["refund_amount"])
+
+        OrderEvent.objects.create(
+            order=order,
+            event_type="return_requested",
+            status=order.status,
+            note=f"İade talebi oluşturuldu ({req.number})",
+            payload={"return_id": req.id, "amount": str(refund_amount)},
+        )
+
+        # Bildirim e-postası (console backend — prod'da SMTP)
+        try:
+            from django.core.mail import send_mail
+            from django.conf import settings as _settings
+
+            recipient = order.user.email if order.user_id else order.guest_email
+            if recipient:
+                send_mail(
+                    subject=f"İade talebiniz alındı · {req.number}",
+                    message=(
+                        f"Merhaba,\n\n{order.number} numaralı siparişinize ait iade talebinizi aldık.\n"
+                        f"Talep numaranız: {req.number}\n"
+                        f"İade tutarı: {refund_amount} TL\n\n"
+                        "Durumu https://ekimcraft.com/hesap/iadeler adresinden takip edebilirsiniz."
+                    ),
+                    from_email=_settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[recipient],
+                    fail_silently=True,
+                )
+        except Exception:
+            pass
+
+        return req
+
+
+class AdminReturnUpdateSerializer(serializers.ModelSerializer):
+    """Admin yönetimi — durum değişimi, not, tutar, kargo etiketi."""
+
+    class Meta:
+        model = ReturnRequest
+        fields = (
+            "status",
+            "resolution",
+            "admin_note",
+            "refund_amount",
+            "return_shipping_label",
+            "tracking_number",
+        )
+        extra_kwargs = {k: {"required": False} for k in fields}
+
+
+def _generate_return_number() -> str:
+    """IAD-YYYYMMDD-XXXX formatında unique numara üret."""
+    from django.utils.timezone import localdate
+
+    date_part = localdate().strftime("%Y%m%d")
+    while True:
+        suffix = get_random_string(4, "0123456789")
+        number = f"IAD-{date_part}-{suffix}"
+        if not ReturnRequest.objects.filter(number=number).exists():
+            return number

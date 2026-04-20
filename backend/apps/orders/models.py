@@ -184,3 +184,87 @@ class CouponUsage(TimestampedModel):
     class Meta:
         verbose_name = _("Kupon kullanımı")
         verbose_name_plural = _("Kupon kullanımları")
+
+
+class ReturnRequest(TimestampedModel):
+    """Müşteri iade/değişim talebi."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", _("Bekliyor")
+        APPROVED = "approved", _("Onaylandı")
+        REJECTED = "rejected", _("Reddedildi")
+        RECEIVED = "received", _("Teslim alındı")
+        REFUNDED = "refunded", _("İade edildi")
+        CANCELLED = "cancelled", _("İptal")
+
+    class Resolution(models.TextChoices):
+        REFUND = "refund", _("Para iadesi")
+        EXCHANGE = "exchange", _("Değişim")
+        STORE_CREDIT = "store_credit", _("Mağaza kredisi")
+
+    class Reason(models.TextChoices):
+        WRONG_ITEM = "wrong_item", _("Yanlış ürün gönderildi")
+        DAMAGED = "damaged", _("Hasarlı/kusurlu")
+        NOT_AS_DESCRIBED = "not_as_described", _("Açıklamayla uyuşmuyor")
+        SIZE = "size", _("Beden/ölçü uygun değil")
+        CHANGED_MIND = "changed_mind", _("Vazgeçtim")
+        OTHER = "other", _("Diğer")
+
+    number = models.CharField(max_length=24, unique=True, db_index=True, help_text="IAD-20250421-0001")
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="returns")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name="returns"
+    )
+
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True)
+    resolution = models.CharField(max_length=20, choices=Resolution.choices, default=Resolution.REFUND)
+    reason = models.CharField(max_length=30, choices=Reason.choices)
+    customer_note = models.TextField(blank=True, help_text="Müşterinin açıklaması")
+    admin_note = models.TextField(blank=True, help_text="Yalnızca yönetime görünür")
+
+    refund_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    return_shipping_label = models.URLField(blank=True, help_text="Kargo etiketi PDF URL'si")
+    tracking_number = models.CharField(max_length=80, blank=True)
+
+    processed_at = models.DateTimeField(null=True, blank=True)
+    processed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="processed_returns",
+    )
+
+    class Meta:
+        verbose_name = _("İade talebi")
+        verbose_name_plural = _("İade talepleri")
+        ordering = ("-created_at",)
+        indexes = [
+            models.Index(fields=["status", "-created_at"]),
+            models.Index(fields=["user", "-created_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return self.number
+
+    @property
+    def can_cancel(self) -> bool:
+        return self.status in {self.Status.PENDING, self.Status.APPROVED}
+
+
+class ReturnRequestItem(TimestampedModel):
+    request = models.ForeignKey(ReturnRequest, on_delete=models.CASCADE, related_name="items")
+    order_item = models.ForeignKey(OrderItem, on_delete=models.PROTECT, related_name="return_items")
+    qty = models.PositiveIntegerField(default=1)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, help_text="Talep anındaki birim fiyat")
+
+    class Meta:
+        verbose_name = _("İade satırı")
+        verbose_name_plural = _("İade satırları")
+
+    def __str__(self) -> str:
+        return f"{self.request.number} · {self.order_item.name_snapshot} × {self.qty}"
+
+    @property
+    def total(self):
+        return self.unit_price * self.qty

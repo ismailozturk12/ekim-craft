@@ -115,3 +115,56 @@ export const catalog = {
   },
   getProduct: (slug: string) => get<ApiProductDetail>(`/catalog/products/${slug}/`),
 };
+
+// ------- Returns -------
+export type ReturnStatus =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "received"
+  | "refunded"
+  | "cancelled";
+export type ReturnResolution = "refund" | "exchange" | "store_credit";
+export type ReturnReason =
+  | "wrong_item"
+  | "damaged"
+  | "not_as_described"
+  | "size"
+  | "changed_mind"
+  | "other";
+
+export interface ApiReturnItem {
+  id: number;
+  order_item: number;
+  product_slug: string;
+  name_snapshot: string;
+  size_snapshot: string;
+  color_snapshot: string;
+  qty: number;
+  unit_price: string;
+}
+
+export interface ApiReturnListItem {
+  id: number;
+  number: string;
+  order_number: string;
+  status: ReturnStatus;
+  resolution: ReturnResolution;
+  reason: ReturnReason;
+  refund_amount: string;
+  items_count: number;
+  created_at: string;
+}
+
+export interface ApiReturnDetail extends ApiReturnListItem {
+  order: number;
+  user: number | null;
+  user_email: string | null;
+  customer_note: string;
+  admin_note: string;
+  return_shipping_label: string;
+  tracking_number: string;
+  processed_at: string | null;
+  items: ApiReturnItem[];
+  updated_at: string;
+}

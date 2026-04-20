@@ -9,6 +9,7 @@ import {
   Megaphone,
   Menu,
   Package,
+  RotateCcw,
   Settings,
   ShoppingBag,
   Store,
@@ -26,6 +27,7 @@ import { useAuth, useAuthHydrated } from "@/store/auth";
 const NAV = [
   { href: "/yonetim", label: "Pano", icon: LayoutDashboard, exact: true },
   { href: "/yonetim/siparisler", label: "Siparişler", icon: ShoppingBag, badge: 3 },
+  { href: "/yonetim/iadeler", label: "İadeler", icon: RotateCcw },
   { href: "/yonetim/urunler", label: "Ürünler", icon: Package },
   { href: "/yonetim/stok", label: "Stok", icon: Box, badge: 2 },
   { href: "/yonetim/musteriler", label: "Müşteriler", icon: Users },

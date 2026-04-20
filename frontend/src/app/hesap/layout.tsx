@@ -1,6 +1,16 @@
 "use client";
 
-import { CreditCard, Heart, HelpCircle, LogOut, MapPin, Package, Settings, User } from "lucide-react";
+import {
+  CreditCard,
+  Heart,
+  HelpCircle,
+  LogOut,
+  MapPin,
+  Package,
+  RotateCcw,
+  Settings,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -13,6 +23,7 @@ import { useAuth } from "@/store/auth";
 const TABS = [
   { href: "/hesap", label: "Genel", icon: User },
   { href: "/hesap/siparisler", label: "Siparişlerim", icon: Package },
+  { href: "/hesap/iadeler", label: "İadelerim", icon: RotateCcw },
   { href: "/hesap/favoriler", label: "Favorilerim", icon: Heart },
   { href: "/hesap/adresler", label: "Adreslerim", icon: MapPin },
   { href: "/hesap/kartlar", label: "Kartlarım", icon: CreditCard },

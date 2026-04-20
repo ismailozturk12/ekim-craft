@@ -1,6 +1,16 @@
 from django.contrib import admin
 
-from .models import Cart, CartItem, Coupon, CouponUsage, Order, OrderEvent, OrderItem
+from .models import (
+    Cart,
+    CartItem,
+    Coupon,
+    CouponUsage,
+    Order,
+    OrderEvent,
+    OrderItem,
+    ReturnRequest,
+    ReturnRequestItem,
+)
 
 
 class OrderItemInline(admin.TabularInline):
@@ -42,3 +52,27 @@ class CartAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CouponUsage)
+
+
+class ReturnRequestItemInline(admin.TabularInline):
+    model = ReturnRequestItem
+    extra = 0
+    readonly_fields = ("order_item", "qty", "unit_price")
+    can_delete = False
+
+
+@admin.register(ReturnRequest)
+class ReturnRequestAdmin(admin.ModelAdmin):
+    list_display = (
+        "number",
+        "order",
+        "user",
+        "status",
+        "resolution",
+        "refund_amount",
+        "created_at",
+    )
+    list_filter = ("status", "resolution", "reason")
+    search_fields = ("number", "order__number", "user__email")
+    inlines = [ReturnRequestItemInline]
+    readonly_fields = ("number", "created_at", "updated_at", "processed_at", "processed_by")
