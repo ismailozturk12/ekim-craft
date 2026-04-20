@@ -35,8 +35,8 @@ exclude = '''
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "ekim.settings"
-python_files = ["test_*.py", "*_test.py"]
-addopts = "-ra --strict-markers --reuse-db"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+addopts = "-ra --strict-markers"
 
 [tool.mypy]
 python_version = "3.11"

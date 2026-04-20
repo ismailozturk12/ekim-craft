@@ -1,4 +1,14 @@
-from django.urls import path
+from rest_framework.routers import DefaultRouter
 
-# Faz 2+ endpoint'leri buraya eklenecek
-urlpatterns: list = []
+from .admin_views import AdminProductImageViewSet, AdminProductVariantViewSet, AdminProductViewSet
+from .views import CategoryViewSet, ProductViewSet, WishlistViewSet
+
+router = DefaultRouter()
+router.register(r"categories", CategoryViewSet, basename="category")
+router.register(r"admin/products", AdminProductViewSet, basename="admin-product")
+router.register(r"admin/images", AdminProductImageViewSet, basename="admin-image")
+router.register(r"admin/variants", AdminProductVariantViewSet, basename="admin-variant")
+router.register(r"wishlist", WishlistViewSet, basename="wishlist")
+router.register(r"products", ProductViewSet, basename="product")
+
+urlpatterns = router.urls
