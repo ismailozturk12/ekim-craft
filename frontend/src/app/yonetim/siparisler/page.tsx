@@ -183,7 +183,7 @@ export default function AdminOrdersPage() {
         ) : filtered.length === 0 ? (
           <div className="text-ek-ink-3 py-10 text-center text-sm">Sipariş yok.</div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
               <tr>
                 <th className="py-3 pr-4">Sipariş</th>
@@ -222,7 +222,7 @@ export default function AdminOrdersPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
 

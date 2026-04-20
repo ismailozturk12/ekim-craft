@@ -184,7 +184,7 @@ export default function AdminDashboard() {
               {stats.recent_orders.length === 0 ? (
                 <div className="text-ek-ink-3 py-4 text-sm">Sipariş yok</div>
               ) : (
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
                   <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
                     <tr>
                       <th className="pb-3">Sipariş</th>
@@ -207,7 +207,7 @@ export default function AdminDashboard() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               )}
             </div>
 

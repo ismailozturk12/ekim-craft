@@ -167,6 +167,7 @@ export default function CheckoutPage() {
                     <div className="grid gap-3 sm:grid-cols-2">
                       <FormField
                         label="Ad soyad"
+                        autoComplete="name"
                         value={address.name}
                         onChange={(v) => setAddress((p) => ({ ...p, name: v }))}
                       />
@@ -186,6 +187,7 @@ export default function CheckoutPage() {
                       <FormField
                         label="Şehir / İlçe"
                         className="sm:col-span-2"
+                        autoComplete="address-level2"
                         value={address.city}
                         onChange={(v) => setAddress((p) => ({ ...p, city: v }))}
                       />
@@ -193,6 +195,7 @@ export default function CheckoutPage() {
                         label="Adres"
                         className="sm:col-span-2"
                         textarea
+                        autoComplete="street-address"
                         value={address.line}
                         onChange={(v) => setAddress((p) => ({ ...p, line: v }))}
                       />
@@ -275,10 +278,33 @@ export default function CheckoutPage() {
 
                     {paymentMethod === "card" && (
                       <div className="grid gap-3 sm:grid-cols-2">
-                        <FormField label="Kart numarası" className="sm:col-span-2" />
-                        <FormField label="Son kullanma (AA/YY)" />
-                        <FormField label="CVV" />
-                        <FormField label="Kart üzerindeki isim" className="sm:col-span-2" />
+                        <FormField
+                          label="Kart numarası"
+                          className="sm:col-span-2"
+                          autoComplete="cc-number"
+                          inputMode="numeric"
+                          maxLength={19}
+                          placeholder="1234 5678 9012 3456"
+                        />
+                        <FormField
+                          label="Son kullanma (AA/YY)"
+                          autoComplete="cc-exp"
+                          inputMode="numeric"
+                          maxLength={5}
+                          placeholder="12/28"
+                        />
+                        <FormField
+                          label="CVV"
+                          autoComplete="cc-csc"
+                          inputMode="numeric"
+                          maxLength={4}
+                          placeholder="123"
+                        />
+                        <FormField
+                          label="Kart üzerindeki isim"
+                          className="sm:col-span-2"
+                          autoComplete="cc-name"
+                        />
                       </div>
                     )}
                     {paymentMethod === "transfer" && (
@@ -365,6 +391,10 @@ function FormField({
   textarea,
   value,
   onChange,
+  autoComplete,
+  inputMode,
+  placeholder,
+  maxLength,
 }: {
   label: string;
   type?: string;
@@ -372,7 +402,15 @@ function FormField({
   textarea?: boolean;
   value?: string;
   onChange?: (v: string) => void;
+  autoComplete?: string;
+  inputMode?: "text" | "numeric" | "tel" | "email" | "decimal" | "search" | "url" | "none";
+  placeholder?: string;
+  maxLength?: number;
 }) {
+  const guessedAutoComplete = autoComplete
+    ?? (type === "email" ? "email" : type === "tel" ? "tel" : undefined);
+  const guessedInputMode = inputMode
+    ?? (type === "email" ? "email" : type === "tel" ? "tel" : undefined);
   return (
     <div className={className}>
       <label className="eyebrow mb-2 block">{label}</label>
@@ -381,6 +419,8 @@ function FormField({
           rows={3}
           value={value ?? ""}
           onChange={(e) => onChange?.(e.target.value)}
+          autoComplete={autoComplete}
+          placeholder={placeholder}
           className="border-ek-line bg-ek-bg-elevated focus:border-ek-forest w-full rounded-md border px-3 py-2 text-sm outline-none"
         />
       ) : (
@@ -388,6 +428,10 @@ function FormField({
           type={type}
           value={value ?? ""}
           onChange={(e) => onChange?.(e.target.value)}
+          autoComplete={guessedAutoComplete}
+          inputMode={guessedInputMode}
+          placeholder={placeholder}
+          maxLength={maxLength}
           className="border-ek-line bg-ek-bg-elevated focus:border-ek-forest w-full rounded-md border px-3 py-2 text-sm outline-none"
         />
       )}

@@ -391,7 +391,7 @@ function UsersPanel() {
   return (
     <>
       <Section title="Personel" action={<button className="border-ek-line rounded-full border px-3 py-1.5 text-xs">+ Davet</button>}>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
           <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
             <tr><th className="py-2">İsim</th><th>E-posta</th><th>Rol</th><th>Durum</th></tr>
           </thead>
@@ -407,7 +407,7 @@ function UsersPanel() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </Section>
       <Section title="Roller">
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
@@ -445,7 +445,7 @@ function ApiPanel() {
   return (
     <>
       <Section title="API anahtarları" action={<button className="border-ek-line rounded-full border px-3 py-1.5 text-xs">+ Yeni</button>}>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
           <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
             <tr><th className="py-2">İsim</th><th>Anahtar</th><th>Oluşturuldu</th><th>Kapsam</th></tr>
           </thead>
@@ -459,7 +459,7 @@ function ApiPanel() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </Section>
       <Section title="Webhook endpoint'leri">
         <div className="space-y-2">

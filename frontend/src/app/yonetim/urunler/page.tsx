@@ -195,7 +195,7 @@ export default function AdminProductsPage() {
       </div>
 
       <div className="border-ek-line-2 bg-ek-bg-card overflow-hidden rounded-xl border">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
           <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
             <tr>
               <th className="px-4 py-3">Ürün</th>
@@ -267,7 +267,7 @@ export default function AdminProductsPage() {
               ))
             )}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

@@ -27,7 +27,7 @@ export default function ShippingAdminPage() {
 
       <h2 className="h-3 mb-3">Aktif gönderiler</h2>
       <div className="border-ek-line-2 bg-ek-bg-card mb-6 overflow-hidden rounded-xl border">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
           <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
             <tr>
               <th className="px-4 py-3">Takip no</th>
@@ -54,12 +54,12 @@ export default function ShippingAdminPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
 
       <h2 className="h-3 mb-3">İade talepleri</h2>
       <div className="border-ek-line-2 bg-ek-bg-card overflow-hidden rounded-xl border">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
           <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
             <tr>
               <th className="px-4 py-3">Talep</th>
@@ -84,7 +84,7 @@ export default function ShippingAdminPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </div>
   );

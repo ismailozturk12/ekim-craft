@@ -130,7 +130,7 @@ export default function StockPage() {
         ) : filtered.length === 0 ? (
           <div className="text-ek-ink-3 py-10 text-center text-sm">Varyant yok.</div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead className="text-ek-ink-3 border-b border-[var(--ek-line-2)] text-left text-[11px] uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3">Ürün / Varyant</th>
@@ -175,7 +175,7 @@ export default function StockPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </div>

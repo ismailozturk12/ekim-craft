@@ -223,7 +223,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 </span>
               </div>
 
-              <div className="mb-1 flex items-baseline gap-3">
+              <div className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="font-serif text-4xl">{formatTL(price)}</span>
                 {oldPrice && (
                   <span className="text-ek-ink-4 text-base line-through">{formatTL(oldPrice)}</span>

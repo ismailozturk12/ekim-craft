@@ -196,7 +196,7 @@ export function Header() {
               aria-label="Sepet"
             >
               <ShoppingBag size={16} strokeWidth={1.75} />
-              <span className="text-xs font-medium">Sepet</span>
+              <span className="hidden text-xs font-medium sm:inline">Sepet</span>
               <span className="bg-ek-terra flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-semibold text-white">
                 {count}
               </span>

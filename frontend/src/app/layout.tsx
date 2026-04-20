@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
@@ -72,6 +72,16 @@ export const metadata: Metadata = {
     },
   },
   ...(SEARCH_CONSOLE ? { verification: { google: SEARCH_CONSOLE } } : {}),
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F6F1E7" },
+    { media: "(prefers-color-scheme: dark)", color: "#1A1F1C" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

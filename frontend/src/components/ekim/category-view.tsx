@@ -1,10 +1,11 @@
 "use client";
 
-import { Grid3x3, LayoutGrid, List, Rows3, X } from "lucide-react";
+import { Grid3x3, LayoutGrid, List, Rows3, SlidersHorizontal, X } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { MasonryGrid } from "@/components/ekim/masonry-grid";
 import { ProductCard } from "@/components/ekim/product-card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { formatTL } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Product } from "@/types/catalog";
@@ -61,6 +62,7 @@ export function CategoryView({
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
   const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
   const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const allColors = useMemo(() => {
     const m = new Map<string, string>();
@@ -187,143 +189,85 @@ export function CategoryView({
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
-        {/* SIDEBAR */}
-        <aside className="h-fit lg:sticky lg:top-[120px]">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="h-3">
-              Filtreler
-              {activeFilters > 0 && (
-                <span className="text-ek-terra-2 font-sans text-sm"> · {activeFilters}</span>
-              )}
-            </h3>
-            <button onClick={reset} className="mono hover:text-ek-ink">
-              SIFIRLA
-            </button>
-          </div>
-
-          {/* Özellik */}
-          <section className="border-ek-line-2 border-b pb-5">
-            <div className="label mb-3">Özellik</div>
-            <div className="space-y-2">
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={customOnly}
-                  onChange={(e) => setCustomOnly(e.target.checked)}
-                />
-                Kişiselleştirilebilir
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={saleOnly}
-                  onChange={(e) => setSaleOnly(e.target.checked)}
-                />
-                İndirimde
-              </label>
-              <label className="flex cursor-pointer items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={inStockOnly}
-                  onChange={(e) => setInStockOnly(e.target.checked)}
-                />
-                Stokta var
-              </label>
-            </div>
-          </section>
-
-          {/* Fiyat */}
-          <section className="border-ek-line-2 border-b py-5">
-            <div className="label mb-3">Fiyat aralığı</div>
-            <input
-              type="range"
-              min={200}
-              max={6000}
-              step={100}
-              value={priceMax}
-              onChange={(e) => setPriceMax(Number(e.target.value))}
-              className="w-full"
-              style={{ accentColor: "var(--ek-forest)" }}
-            />
-            <div className="mono mt-1.5 flex justify-between">
-              <span>{formatTL(200)}</span>
-              <span>≤ {formatTL(priceMax)}</span>
-            </div>
-          </section>
-
-          {/* Renk */}
-          {allColors.length > 0 && (
-            <section className="border-ek-line-2 border-b py-5">
-              <div className="label mb-3">Renk</div>
-              <div className="flex flex-wrap gap-2">
-                {allColors.map(([name, hex]) => {
-                  const active = selectedColors.has(name);
-                  return (
-                    <button
-                      key={name}
-                      onClick={() => toggleSet(selectedColors, name, setSelectedColors)}
-                      title={name}
-                      className={cn(
-                        "h-7 w-7 rounded-full transition-transform",
-                        active
-                          ? "ring-ek-ink ring-offset-ek-bg ring-2 ring-offset-2"
-                          : "border-ek-line hover:scale-110 border"
-                      )}
-                      style={{ background: hex }}
-                      aria-label={name}
-                    />
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* Marka */}
-          <section className="border-ek-line-2 border-b py-5">
-            <div className="label mb-3">Marka</div>
-            <div className="space-y-2">
-              {BRANDS.map((b) => (
-                <label key={b} className="flex cursor-pointer items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={selectedBrands.has(b)}
-                    onChange={() => toggleSet(selectedBrands, b, setSelectedBrands)}
-                  />
-                  {b}
-                </label>
-              ))}
-            </div>
-          </section>
-
-          {/* Beden */}
-          <section className="pt-5">
-            <div className="label mb-3">Beden</div>
-            <div className="flex flex-wrap gap-1.5">
-              {SIZES.map((s) => {
-                const active = selectedSizes.has(s);
-                return (
-                  <button
-                    key={s}
-                    onClick={() => toggleSet(selectedSizes, s, setSelectedSizes)}
-                    className={cn(
-                      "min-w-9 rounded-full border px-3 py-1.5 text-xs transition-colors",
-                      active
-                        ? "bg-ek-ink text-ek-cream border-ek-ink"
-                        : "border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3"
-                    )}
-                  >
-                    {s}
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+        {/* SIDEBAR — desktop only */}
+        <aside className="hidden h-fit lg:sticky lg:top-[120px] lg:block">
+          <FiltersHeader activeFilters={activeFilters} onReset={reset} />
+          <FiltersBody
+            allColors={allColors}
+            customOnly={customOnly}
+            setCustomOnly={setCustomOnly}
+            saleOnly={saleOnly}
+            setSaleOnly={setSaleOnly}
+            inStockOnly={inStockOnly}
+            setInStockOnly={setInStockOnly}
+            priceMax={priceMax}
+            setPriceMax={setPriceMax}
+            selectedColors={selectedColors}
+            setSelectedColors={setSelectedColors}
+            selectedBrands={selectedBrands}
+            setSelectedBrands={setSelectedBrands}
+            selectedSizes={selectedSizes}
+            setSelectedSizes={setSelectedSizes}
+            toggleSet={toggleSet}
+          />
         </aside>
 
+        {/* Mobile filters Sheet */}
+        <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+          <SheetContent
+            side="left"
+            className="!bg-[var(--ek-bg-elevated)] w-[85vw] max-w-[360px] overflow-y-auto shadow-2xl"
+          >
+            <SheetHeader>
+              <SheetTitle className="h-3 text-left">Filtreler</SheetTitle>
+            </SheetHeader>
+            <div className="mt-4">
+              <FiltersHeader activeFilters={activeFilters} onReset={reset} />
+              <FiltersBody
+                allColors={allColors}
+                customOnly={customOnly}
+                setCustomOnly={setCustomOnly}
+                saleOnly={saleOnly}
+                setSaleOnly={setSaleOnly}
+                inStockOnly={inStockOnly}
+                setInStockOnly={setInStockOnly}
+                priceMax={priceMax}
+                setPriceMax={setPriceMax}
+                selectedColors={selectedColors}
+                setSelectedColors={setSelectedColors}
+                selectedBrands={selectedBrands}
+                setSelectedBrands={setSelectedBrands}
+                selectedSizes={selectedSizes}
+                setSelectedSizes={setSelectedSizes}
+                toggleSet={toggleSet}
+              />
+              <button
+                onClick={() => setFiltersOpen(false)}
+                className="bg-ek-ink text-ek-cream hover:bg-ek-ink-2 mt-6 w-full rounded-full py-3 text-sm font-medium"
+              >
+                {filtered.length} ürünü göster
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
         {/* MAIN */}
-        <div>
+        <div className="min-w-0">
           {/* Toolbar */}
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3 flex items-center gap-2 rounded-full border px-4 py-2 text-sm lg:hidden"
+            >
+              <SlidersHorizontal size={14} strokeWidth={1.75} />
+              <span>Filtrele</span>
+              {activeFilters > 0 && (
+                <span className="bg-ek-terra rounded-full px-1.5 text-[10px] font-semibold text-white">
+                  {activeFilters}
+                </span>
+              )}
+            </button>
+
             <div className="flex flex-wrap gap-2">
               {customOnly && (
                 <ActiveChip label="Kişiselleştirilebilir" onRemove={() => setCustomOnly(false)} />
@@ -439,5 +383,187 @@ function ActiveChip({ label, onRemove }: { label: string; onRemove: () => void }
       {label}
       <X size={11} />
     </button>
+  );
+}
+
+function FiltersHeader({
+  activeFilters,
+  onReset,
+}: {
+  activeFilters: number;
+  onReset: () => void;
+}) {
+  return (
+    <div className="mb-4 flex items-center justify-between">
+      <h3 className="h-3">
+        Filtreler
+        {activeFilters > 0 && (
+          <span className="text-ek-terra-2 font-sans text-sm"> · {activeFilters}</span>
+        )}
+      </h3>
+      <button onClick={onReset} className="mono hover:text-ek-ink">
+        SIFIRLA
+      </button>
+    </div>
+  );
+}
+
+interface FiltersBodyProps {
+  allColors: [string, string][];
+  customOnly: boolean;
+  setCustomOnly: (v: boolean) => void;
+  saleOnly: boolean;
+  setSaleOnly: (v: boolean) => void;
+  inStockOnly: boolean;
+  setInStockOnly: (v: boolean) => void;
+  priceMax: number;
+  setPriceMax: (v: number) => void;
+  selectedColors: Set<string>;
+  setSelectedColors: (s: Set<string>) => void;
+  selectedBrands: Set<string>;
+  setSelectedBrands: (s: Set<string>) => void;
+  selectedSizes: Set<string>;
+  setSelectedSizes: (s: Set<string>) => void;
+  toggleSet: (set: Set<string>, value: string, setter: (s: Set<string>) => void) => void;
+}
+
+function FiltersBody({
+  allColors,
+  customOnly,
+  setCustomOnly,
+  saleOnly,
+  setSaleOnly,
+  inStockOnly,
+  setInStockOnly,
+  priceMax,
+  setPriceMax,
+  selectedColors,
+  setSelectedColors,
+  selectedBrands,
+  setSelectedBrands,
+  selectedSizes,
+  setSelectedSizes,
+  toggleSet,
+}: FiltersBodyProps) {
+  return (
+    <>
+      {/* Özellik */}
+      <section className="border-ek-line-2 border-b pb-5">
+        <div className="label mb-3">Özellik</div>
+        <div className="space-y-2">
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={customOnly}
+              onChange={(e) => setCustomOnly(e.target.checked)}
+            />
+            Kişiselleştirilebilir
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={saleOnly}
+              onChange={(e) => setSaleOnly(e.target.checked)}
+            />
+            İndirimde
+          </label>
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={inStockOnly}
+              onChange={(e) => setInStockOnly(e.target.checked)}
+            />
+            Stokta var
+          </label>
+        </div>
+      </section>
+
+      {/* Fiyat */}
+      <section className="border-ek-line-2 border-b py-5">
+        <div className="label mb-3">Fiyat aralığı</div>
+        <input
+          type="range"
+          min={200}
+          max={6000}
+          step={100}
+          value={priceMax}
+          onChange={(e) => setPriceMax(Number(e.target.value))}
+          className="w-full"
+          style={{ accentColor: "var(--ek-forest)" }}
+        />
+        <div className="mono mt-1.5 flex justify-between">
+          <span>{formatTL(200)}</span>
+          <span>≤ {formatTL(priceMax)}</span>
+        </div>
+      </section>
+
+      {/* Renk */}
+      {allColors.length > 0 && (
+        <section className="border-ek-line-2 border-b py-5">
+          <div className="label mb-3">Renk</div>
+          <div className="flex flex-wrap gap-2">
+            {allColors.map(([name, hex]) => {
+              const active = selectedColors.has(name);
+              return (
+                <button
+                  key={name}
+                  onClick={() => toggleSet(selectedColors, name, setSelectedColors)}
+                  title={name}
+                  className={cn(
+                    "h-7 w-7 rounded-full transition-transform",
+                    active
+                      ? "ring-ek-ink ring-offset-ek-bg ring-2 ring-offset-2"
+                      : "border-ek-line hover:scale-110 border"
+                  )}
+                  style={{ background: hex }}
+                  aria-label={name}
+                />
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Marka */}
+      <section className="border-ek-line-2 border-b py-5">
+        <div className="label mb-3">Marka</div>
+        <div className="space-y-2">
+          {BRANDS.map((b) => (
+            <label key={b} className="flex cursor-pointer items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={selectedBrands.has(b)}
+                onChange={() => toggleSet(selectedBrands, b, setSelectedBrands)}
+              />
+              {b}
+            </label>
+          ))}
+        </div>
+      </section>
+
+      {/* Beden */}
+      <section className="pt-5">
+        <div className="label mb-3">Beden</div>
+        <div className="flex flex-wrap gap-1.5">
+          {SIZES.map((s) => {
+            const active = selectedSizes.has(s);
+            return (
+              <button
+                key={s}
+                onClick={() => toggleSet(selectedSizes, s, setSelectedSizes)}
+                className={cn(
+                  "min-w-9 rounded-full border px-3 py-1.5 text-xs transition-colors",
+                  active
+                    ? "bg-ek-ink text-ek-cream border-ek-ink"
+                    : "border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3"
+                )}
+              >
+                {s}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    </>
   );
 }
