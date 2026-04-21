@@ -52,6 +52,7 @@ interface ProductForm {
   size_type: string;
   tags: string;
   is_visible: boolean;
+  stock: string;
   materials: string;     // virgülle ayrılmış
   care: string;
   lead_time: string;
@@ -111,6 +112,7 @@ export default function AdminProductsPage() {
       size_type: "one-size",
       tags: "",
       is_visible: true,
+      stock: "0",
       materials: "",
       care: "",
       lead_time: "1-3 gün",
@@ -141,6 +143,7 @@ export default function AdminProductsPage() {
       size_type: p.size_type,
       tags: (p.tags ?? []).join(", "),
       is_visible: p.is_visible,
+      stock: String(p.stock ?? 0),
       materials: (p.materials ?? []).join(", "),
       care: p.care ?? "",
       lead_time: p.lead_time ?? "1-3 gün",
@@ -167,6 +170,7 @@ export default function AdminProductsPage() {
         .map((t) => t.trim())
         .filter(Boolean),
       is_visible: form.is_visible,
+      stock: parseInt(form.stock) || 0,
       materials: form.materials
         .split(",")
         .map((t) => t.trim())
@@ -455,7 +459,7 @@ export default function AdminProductsPage() {
 
                 {/* Fiyatlandırma */}
                 <section>
-                  <FormSectionHeader icon={<span className="font-serif">₺</span>} title="Fiyatlandırma" />
+                  <FormSectionHeader icon={<span className="font-serif">₺</span>} title="Fiyatlandırma & stok" />
                   <div className="grid grid-cols-2 gap-3">
                     <MoneyField
                       label="FİYAT"
@@ -467,6 +471,14 @@ export default function AdminProductsPage() {
                       label="ESKİ FİYAT (indirim için)"
                       value={form.old_price}
                       onChange={(v) => setForm((p) => (p ? { ...p, old_price: v } : p))}
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <Field
+                      label="STOK (varyant yoksa kullanılır — 0 ise 'Stokta yok' görünür)"
+                      value={form.stock}
+                      placeholder="10"
+                      onChange={(v) => setForm((p) => (p ? { ...p, stock: v.replace(/\D/g, "") } : p))}
                     />
                   </div>
                   {form.old_price && parseFloat(form.old_price) > parseFloat(form.price || "0") && (

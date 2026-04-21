@@ -50,6 +50,7 @@ export interface ApiProductList {
   tags: string[];
   customizable: boolean;
   size_type: string;
+  stock: number;
   cover_image: string | null;
   is_visible: boolean;
 }

@@ -58,6 +58,7 @@ class Product(TimestampedModel):
     tags = models.JSONField(default=list, blank=True)
     customizable = models.BooleanField(default=False)
     size_type = models.CharField(max_length=20, choices=SizeType.choices, default=SizeType.ONE_SIZE)
+    stock = models.PositiveIntegerField(default=0, help_text="Varyant yoksa kullanılır")
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     review_count = models.PositiveIntegerField(default=0)
     is_visible = models.BooleanField(default=True)
@@ -83,7 +84,10 @@ class Product(TimestampedModel):
 
     @property
     def total_stock(self) -> int:
-        return sum(v.stock for v in self.variants.all())
+        variants = list(self.variants.all())
+        if variants:
+            return sum(v.stock for v in variants)
+        return self.stock
 
     @property
     def is_in_stock(self) -> bool:

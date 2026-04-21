@@ -36,6 +36,7 @@ interface ProductPurchasePanelProps {
   price: number;
   oldPrice?: number;
   variants: Variant[];
+  productStock: number;
   customizable: boolean;
   sizeType: string;
   leadTime: string;
@@ -66,6 +67,7 @@ export function ProductPurchasePanel({
   name,
   price,
   variants,
+  productStock,
   customizable,
   sizeType,
   leadTime,
@@ -108,10 +110,10 @@ export function ProductPurchasePanel({
   const [giftWrap, setGiftWrap] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const madeToOrder = variants.length === 0;
-  const stockForSize = madeToOrder
-    ? 999
-    : sizes.find((s) => s.label === selectedSize)?.stock ?? 0;
+  const hasVariants = variants.length > 0;
+  const stockForSize = hasVariants
+    ? sizes.find((s) => s.label === selectedSize)?.stock ?? 0
+    : productStock;
   const hasPersonalization = !!uploaded || !!customText || !!orderNote;
   const personalizationFee = hasPersonalization ? PERSONALIZATION_PRICE : 0;
   const customSizeFee = customSizeOn ? CUSTOM_SIZE_PRICE : 0;
@@ -482,7 +484,7 @@ export function ProductPurchasePanel({
           <span
             className={cn(
               "inline-block h-2 w-2 rounded-full",
-              madeToOrder || stockForSize > 5
+              stockForSize > 5
                 ? "bg-ek-ok"
                 : stockForSize > 0
                   ? "bg-ek-warn animate-pulse"
@@ -490,13 +492,13 @@ export function ProductPurchasePanel({
             )}
           />
           <span className="text-sm font-medium">
-            {madeToOrder
-              ? "Sipariş üzerine üretilir"
-              : stockForSize > 5
-                ? `Stokta var (${stockForSize} adet)`
-                : stockForSize > 0
-                  ? `Az kaldı! Sadece ${stockForSize} adet`
-                  : "Bu beden tükendi"}
+            {stockForSize > 5
+              ? `Stokta var (${stockForSize} adet)`
+              : stockForSize > 0
+                ? `Az kaldı! Sadece ${stockForSize} adet`
+                : hasVariants
+                  ? "Bu beden tükendi"
+                  : "Stokta yok"}
           </span>
         </div>
         <div className="text-ek-ink-2 mb-1.5 flex items-center gap-2 text-sm">
