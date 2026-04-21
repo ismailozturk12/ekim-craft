@@ -44,7 +44,9 @@ function AuthInner() {
     marketing: false,
   });
 
-  const redirect = searchParams.get("next") ?? "/hesap";
+  // Open-redirect koruma: sadece tek slash ile başlayan iç path'lere izin ver
+  const rawNext = searchParams.get("next") ?? "/hesap";
+  const redirect = /^\/[^/\\]/.test(rawNext) ? rawNext : "/hesap";
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

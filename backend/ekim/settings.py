@@ -175,11 +175,20 @@ REST_FRAMEWORK = {
         else (
             "rest_framework.throttling.AnonRateThrottle",
             "rest_framework.throttling.UserRateThrottle",
+            "rest_framework.throttling.ScopedRateThrottle",
         )
     ),
     "DEFAULT_THROTTLE_RATES": {
         "anon": "1000/hour",
         "user": "5000/hour",
+        # Kritik endpoint'ler için sıkı limitler
+        "login": "10/minute",
+        "register": "5/hour",
+        "password_reset": "3/hour",
+        "coupon_validate": "30/hour",
+        "contact": "5/hour",
+        "newsletter": "10/hour",
+        "review_create": "5/hour",
     },
 }
 

@@ -2,8 +2,13 @@ from decimal import Decimal
 
 from django.utils import timezone
 from rest_framework import mixins, permissions, status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+
+
+class _CouponValidateThrottle(ScopedRateThrottle):
+    scope = "coupon_validate"
 
 from .models import Coupon, Order, OrderEvent, ReturnRequest
 from .serializers import (
@@ -20,6 +25,7 @@ from .serializers import (
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([_CouponValidateThrottle])
 def validate_coupon(request):
     """Kupon kodunu doğrular ve indirim tutarını hesaplar."""
     code = (request.data.get("code") or "").strip().upper()

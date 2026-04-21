@@ -9,7 +9,16 @@ from django.contrib.auth import get_user_model
 from django.db.models import Count, F, Q, Sum
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.throttling import ScopedRateThrottle
+
+
+class _NewsletterThrottle(ScopedRateThrottle):
+    scope = "newsletter"
+
+
+class _ContactThrottle(ScopedRateThrottle):
+    scope = "contact"
 from rest_framework.response import Response
 
 from apps.catalog.models import Product, ProductVariant
@@ -323,6 +332,7 @@ from apps.core.models import ContactMessage, NewsletterSubscriber, Setting
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([_NewsletterThrottle])
 def newsletter_subscribe(request):
     email = (request.data.get("email") or "").strip().lower()
     if not email or "@" not in email:
@@ -335,6 +345,7 @@ def newsletter_subscribe(request):
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([_ContactThrottle])
 def contact_submit(request):
     name = (request.data.get("name") or "").strip()
     email = (request.data.get("email") or "").strip().lower()

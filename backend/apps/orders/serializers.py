@@ -172,7 +172,7 @@ class CheckoutSerializer(serializers.Serializer):
         elif method == Order.ShippingMethod.EXPRESS:
             shipping = Decimal("89.00")
 
-        # Kupon uygula
+        # Kupon uygula — race condition için select_for_update
         from django.utils import timezone
 
         from .models import Coupon
@@ -181,7 +181,11 @@ class CheckoutSerializer(serializers.Serializer):
         coupon_obj = None
         coupon_code = (validated_data.get("coupon_code") or "").strip().upper()
         if coupon_code:
-            coupon_obj = Coupon.objects.filter(code__iexact=coupon_code, is_active=True).first()
+            coupon_obj = (
+                Coupon.objects.select_for_update()
+                .filter(code__iexact=coupon_code, is_active=True)
+                .first()
+            )
             if coupon_obj:
                 now = timezone.now()
                 valid = True

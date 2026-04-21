@@ -208,8 +208,13 @@ Kaçırma: migration eklediysen `migrate`; statik dosya değiştiysen `collectst
 
 ## Test hesapları
 
-- **Admin:** `admin@ekimcraft.com` / `2cfHJdNDrBziblvm` (prod) — /tmp/ekim-secrets.txt
-- **Demo müşteri:** `deniz@ekimcraft.com` / `demo1234`
+- **Admin:** `admin@ekimcraft.com` — şifre sunucuda `/tmp/ekim-new-admin.txt` (repo'ya yazma).
+- **Demo müşteri:** `deniz@ekimcraft.com` / `demo1234` (seed'den).
+
+Gerçek prod şifrelerini repo'ya asla yazma. Şifre rotate etmek için:
+```bash
+ssh root@178.104.226.41 'sudo -u ekim bash -c "cd /srv/ekim-craft/backend && set -a; source .env; set +a; .venv/bin/python manage.py changepassword admin@ekimcraft.com"'
+```
 
 ## İş akışı kuralları
 

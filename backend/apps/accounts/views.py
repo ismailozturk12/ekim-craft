@@ -7,8 +7,9 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from rest_framework import generics, permissions, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.core.models import Setting
@@ -27,11 +28,32 @@ User = get_user_model()
 
 class EkimTokenView(TokenObtainPairView):
     serializer_class = EkimTokenSerializer
+    throttle_scope = "login"
 
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = (permissions.AllowAny,)
+    throttle_scope = "register"
+
+    def create(self, request, *args, **kwargs):
+        # Enumerate engellemek için email çakışmasında generic cevap dön
+        email = (request.data.get("email") or "").strip().lower()
+        if email:
+            from .models import User
+
+            if User.objects.filter(email__iexact=email).exists():
+                # Sessizce başarılı gibi döner — gerçek kullanıcıya "zaten kayıtlısın" e-maili göndermek doğru yaklaşım
+                return Response(
+                    {
+                        "detail": (
+                            "Kayıt talebin alındı. "
+                            "E-posta kutunu kontrol et; doğrulama bağlantısı gönderildi."
+                        )
+                    },
+                    status=201,
+                )
+        return super().create(request, *args, **kwargs)
 
 
 @api_view(["GET"])
@@ -76,8 +98,13 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
 # ============================================================
 # Password change / reset
 # ============================================================
+class _ChangePasswordThrottle(ScopedRateThrottle):
+    scope = "login"  # login ile aynı kovayı kullan — current_password brute-force'a karşı
+
+
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
+@throttle_classes([_ChangePasswordThrottle])
 def change_password(request):
     current = request.data.get("current_password", "")
     new = request.data.get("new_password", "")
@@ -89,11 +116,29 @@ def change_password(request):
         return Response({"new_password": e.messages}, status=status.HTTP_400_BAD_REQUEST)
     request.user.set_password(new)
     request.user.save()
-    return Response({"ok": True})
+    # Mevcut tüm refresh token'ları blacklist'e al — çalınan token'lar geçersiz olsun
+    try:
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+
+        for ot in OutstandingToken.objects.filter(user=request.user):
+            try:
+                ot.blacklistedtoken  # zaten blacklist'te
+            except Exception:
+                from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+
+                BlacklistedToken.objects.create(token=ot)
+    except Exception:
+        pass
+    return Response({"ok": True, "detail": "Şifre değiştirildi. Tüm cihazlardan çıkış yapıldı."})
+
+
+class _PasswordResetThrottle(ScopedRateThrottle):
+    scope = "password_reset"
 
 
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
+@throttle_classes([_PasswordResetThrottle])
 def password_reset_request(request):
     """Email al → 32 karakterli token üret → Setting key 'pwdreset:<token>' olarak sakla (1 saat).
     Email gönderimi şu an log'a düşer; Faz 11'de Resend ile gerçek mail."""
