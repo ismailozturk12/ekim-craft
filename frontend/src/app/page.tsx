@@ -7,9 +7,15 @@ import { ProductCard } from "@/components/ekim/product-card";
 import { SectionHeader } from "@/components/ekim/section-header";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
-import { catalog } from "@/lib/api/client";
+import { API_URL, catalog } from "@/lib/api/client";
 import { SITE_URL } from "@/lib/seo";
 import type { Product } from "@/types/catalog";
+
+function resolveImage(u?: string | null): string | null {
+  if (!u) return null;
+  if (u.startsWith("http")) return u;
+  return `${API_URL}${u}`;
+}
 
 export const metadata: Metadata = {
   title: "Ekim Craft — El yapımı, kişiye özel ürünler",
@@ -56,14 +62,34 @@ function mapProduct(p: unknown): Product {
 
 export default async function Home() {
   const [productsRes, categoriesRes] = await Promise.all([
-    catalog.listProducts({ page_size: 8 }).catch(() => null),
+    catalog.listProducts({ page_size: 60 }).catch(() => null),
     catalog.listCategories().catch(() => null),
   ]);
 
-  const products = (productsRes?.results ?? []).map(mapProduct);
+  const rawProducts = productsRes?.results ?? [];
+  const products = rawProducts.map(mapProduct);
   const categories = (categoriesRes ?? []).filter((c: { slug?: string }) => c.slug !== "all");
   const featured = products.filter((p) => p.tags.includes("Çok satan")).slice(0, 4);
   const newest = products.filter((p) => p.tags.includes("Yeni")).slice(0, 4);
+
+  // Hero: en güçlü 2 ürünün kapağı (Çok satan + Yeni öncelik)
+  const hero = [...products]
+    .filter((p) => p.coverImage)
+    .sort((a, b) => {
+      const as = (a.tags.includes("Çok satan") ? 2 : 0) + (a.tags.includes("Yeni") ? 1 : 0);
+      const bs = (b.tags.includes("Çok satan") ? 2 : 0) + (b.tags.includes("Yeni") ? 1 : 0);
+      return bs - as;
+    })
+    .slice(0, 2);
+
+  // Kategori başına 1 temsili cover
+  const categoryCovers = new Map<string, string>();
+  for (const p of rawProducts) {
+    const slug = p.category_slug;
+    if (slug && p.cover_image && !categoryCovers.has(slug)) {
+      categoryCovers.set(slug, p.cover_image);
+    }
+  }
 
   return (
     <>
@@ -112,12 +138,46 @@ export default async function Home() {
               </div>
             </div>
             <div className="relative h-[420px] md:h-[540px]">
-              <div className="absolute right-0 top-0 w-[78%] overflow-hidden rounded-lg shadow-lg">
-                <Placeholder tone="terra" label="ahşap tren seti" ratio="3 / 4" />
-              </div>
-              <div className="border-ek-bg bg-ek-bg absolute bottom-0 left-0 w-[52%] overflow-hidden rounded-lg border-4 shadow-xl">
-                <Placeholder tone="sage" label="ahşap oyuncak" ratio="1" />
-              </div>
+              {hero[0] ? (
+                <Link
+                  href={`/urun/${hero[0].slug}`}
+                  className="group absolute right-0 top-0 block w-[78%] overflow-hidden rounded-lg shadow-lg"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={resolveImage(hero[0].coverImage) ?? ""}
+                    alt={hero[0].name}
+                    className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="eager"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+                    <div className="mono text-white/80">{hero[0].artisanCity.toUpperCase()}</div>
+                    <div className="truncate text-sm font-medium text-white">{hero[0].name}</div>
+                  </div>
+                </Link>
+              ) : (
+                <div className="absolute right-0 top-0 w-[78%] overflow-hidden rounded-lg shadow-lg">
+                  <Placeholder tone="terra" label="el yapımı" ratio="3 / 4" />
+                </div>
+              )}
+              {hero[1] ? (
+                <Link
+                  href={`/urun/${hero[1].slug}`}
+                  className="border-ek-bg bg-ek-bg group absolute bottom-0 left-0 block w-[52%] overflow-hidden rounded-lg border-4 shadow-xl"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={resolveImage(hero[1].coverImage) ?? ""}
+                    alt={hero[1].name}
+                    className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="eager"
+                  />
+                </Link>
+              ) : (
+                <div className="border-ek-bg bg-ek-bg absolute bottom-0 left-0 w-[52%] overflow-hidden rounded-lg border-4 shadow-xl">
+                  <Placeholder tone="sage" label="özenle üretildi" ratio="1" />
+                </div>
+              )}
             </div>
           </div>
         </Container>
@@ -136,18 +196,29 @@ export default async function Home() {
                   aksesuar: "forest",
                   dekor: "cream",
                 } as const;
+                const cover = c.slug ? resolveImage(categoryCovers.get(c.slug)) : null;
                 return (
                   <Link
                     key={c.slug}
                     href={`/kategori/${c.slug}`}
                     className="group relative overflow-hidden rounded-lg transition-transform hover:-translate-y-1"
                   >
-                    <Placeholder
-                      tone={(tones[c.slug as keyof typeof tones] as "terra") ?? "cream"}
-                      label={c.name}
-                      ratio="4 / 5"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent" />
+                    {cover ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={cover}
+                        alt={c.name ?? ""}
+                        className="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Placeholder
+                        tone={(tones[c.slug as keyof typeof tones] as "terra") ?? "cream"}
+                        label={c.name}
+                        ratio="4 / 5"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     <div className="absolute inset-x-5 bottom-5 text-white">
                       <div className="font-serif text-xl">{c.name}</div>
                       <div className="mono text-white/80">{c.count} ürün →</div>
