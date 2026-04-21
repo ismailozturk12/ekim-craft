@@ -108,7 +108,10 @@ export function ProductPurchasePanel({
   const [giftWrap, setGiftWrap] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const stockForSize = sizes.find((s) => s.label === selectedSize)?.stock ?? 0;
+  const madeToOrder = variants.length === 0;
+  const stockForSize = madeToOrder
+    ? 999
+    : sizes.find((s) => s.label === selectedSize)?.stock ?? 0;
   const hasPersonalization = !!uploaded || !!customText || !!orderNote;
   const personalizationFee = hasPersonalization ? PERSONALIZATION_PRICE : 0;
   const customSizeFee = customSizeOn ? CUSTOM_SIZE_PRICE : 0;
@@ -479,7 +482,7 @@ export function ProductPurchasePanel({
           <span
             className={cn(
               "inline-block h-2 w-2 rounded-full",
-              stockForSize > 5
+              madeToOrder || stockForSize > 5
                 ? "bg-ek-ok"
                 : stockForSize > 0
                   ? "bg-ek-warn animate-pulse"
@@ -487,11 +490,13 @@ export function ProductPurchasePanel({
             )}
           />
           <span className="text-sm font-medium">
-            {stockForSize > 5
-              ? `Stokta var (${stockForSize} adet)`
-              : stockForSize > 0
-                ? `Az kaldı! Sadece ${stockForSize} adet`
-                : "Bu beden tükendi"}
+            {madeToOrder
+              ? "Sipariş üzerine üretilir"
+              : stockForSize > 5
+                ? `Stokta var (${stockForSize} adet)`
+                : stockForSize > 0
+                  ? `Az kaldı! Sadece ${stockForSize} adet`
+                  : "Bu beden tükendi"}
           </span>
         </div>
         <div className="text-ek-ink-2 mb-1.5 flex items-center gap-2 text-sm">
