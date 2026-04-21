@@ -4,10 +4,10 @@ from django.utils import timezone
 from rest_framework import mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.throttling import AnonRateThrottle
 
 
-class _CouponValidateThrottle(ScopedRateThrottle):
+class _CouponValidateThrottle(AnonRateThrottle):
     scope = "coupon_validate"
 
 from .models import Coupon, Order, OrderEvent, ReturnRequest

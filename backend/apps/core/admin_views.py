@@ -10,14 +10,14 @@ from django.db.models import Count, F, Q, Sum
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
-from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.throttling import AnonRateThrottle
 
 
-class _NewsletterThrottle(ScopedRateThrottle):
+class _NewsletterThrottle(AnonRateThrottle):
     scope = "newsletter"
 
 
-class _ContactThrottle(ScopedRateThrottle):
+class _ContactThrottle(AnonRateThrottle):
     scope = "contact"
 from rest_framework.response import Response
 

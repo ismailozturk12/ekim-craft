@@ -9,7 +9,7 @@ from django.utils.crypto import get_random_string
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
-from rest_framework.throttling import ScopedRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.core.models import Setting
@@ -98,7 +98,7 @@ class PaymentMethodViewSet(viewsets.ModelViewSet):
 # ============================================================
 # Password change / reset
 # ============================================================
-class _ChangePasswordThrottle(ScopedRateThrottle):
+class _ChangePasswordThrottle(UserRateThrottle):
     scope = "login"  # login ile aynı kovayı kullan — current_password brute-force'a karşı
 
 
@@ -132,7 +132,7 @@ def change_password(request):
     return Response({"ok": True, "detail": "Şifre değiştirildi. Tüm cihazlardan çıkış yapıldı."})
 
 
-class _PasswordResetThrottle(ScopedRateThrottle):
+class _PasswordResetThrottle(AnonRateThrottle):
     scope = "password_reset"
 
 
