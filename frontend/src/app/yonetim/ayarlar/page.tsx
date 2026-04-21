@@ -4,17 +4,19 @@ import {
   Banknote,
   Bell,
   FolderTree,
-  Globe,
   Key,
+  Loader2,
   Receipt,
   Store,
   Truck,
   Users,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { KPICard } from "@/components/ekim/kpi-card";
 import { StatusPill } from "@/components/ekim/status-pill";
 import { cn } from "@/lib/utils";
+import { apiErrorMessage, authedFetch } from "@/store/auth";
 
 const PANELS = [
   { id: "store", label: "Mağaza", icon: Store, desc: "Ad, iletişim, para birimi" },
@@ -135,50 +137,477 @@ function ToggleRow({ title, desc, defaultChecked = false }: { title: string; des
   );
 }
 
+interface StoreSettings {
+  legal_name: string;
+  url: string;
+  founded: string;
+  category: string;
+  tax_no: string;
+  mersis: string;
+  address: string;
+  phone: string;
+  email: string;
+  currency: string;
+  lang: string;
+  tz: string;
+}
+
+const STORE_DEFAULTS: StoreSettings = {
+  legal_name: "",
+  url: "ekimcraft.com",
+  founded: "",
+  category: "",
+  tax_no: "",
+  mersis: "",
+  address: "",
+  phone: "",
+  email: "",
+  currency: "TRY",
+  lang: "tr",
+  tz: "Europe/Istanbul",
+};
+
 function StorePanel() {
+  const [form, setForm] = useState<StoreSettings>(STORE_DEFAULTS);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [exists, setExists] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      try {
+        const res = await authedFetch("/core/admin/settings/store/");
+        if (res.ok) {
+          const d = await res.json();
+          setExists(true);
+          setForm({ ...STORE_DEFAULTS, ...(d.value ?? {}) });
+        }
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  const update = <K extends keyof StoreSettings>(k: K, v: StoreSettings[K]) =>
+    setForm((p) => ({ ...p, [k]: v }));
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const endpoint = exists
+        ? "/core/admin/settings/store/"
+        : "/core/admin/settings/";
+      const method = exists ? "PATCH" : "POST";
+      const body = exists
+        ? JSON.stringify({ value: form })
+        : JSON.stringify({ key: "store", value: form, description: "Mağaza ayarları" });
+      const res = await authedFetch(endpoint, { method, body });
+      if (!res.ok) {
+        toast.error(await apiErrorMessage(res));
+        return;
+      }
+      setExists(true);
+      toast.success("Mağaza ayarları kaydedildi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-ek-ink-3 py-10 text-center text-sm">
+        <Loader2 className="mx-auto mb-2 animate-spin" size={20} />
+        Yükleniyor...
+      </div>
+    );
+  }
+
   return (
     <>
       <Section title="Marka">
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="TİCARİ UNVAN" value="Ekim Craft Atölye" />
-          <Field label="URL" value="ekimcraft.com" />
-          <Field label="KURULUŞ" value="2019" />
-          <Field label="KATEGORİ" value="Hediyelik / El sanatları" />
+          <BoundField
+            label="TİCARİ UNVAN"
+            value={form.legal_name}
+            onChange={(v) => update("legal_name", v)}
+          />
+          <BoundField
+            label="URL"
+            value={form.url}
+            onChange={(v) => update("url", v)}
+          />
+          <BoundField
+            label="KURULUŞ"
+            value={form.founded}
+            onChange={(v) => update("founded", v)}
+          />
+          <BoundField
+            label="KATEGORİ"
+            value={form.category}
+            onChange={(v) => update("category", v)}
+          />
+        </div>
+      </Section>
+      <Section title="İletişim">
+        <div className="grid gap-3 md:grid-cols-2">
+          <BoundField
+            label="TELEFON"
+            value={form.phone}
+            onChange={(v) => update("phone", v)}
+          />
+          <BoundField
+            label="E-POSTA"
+            value={form.email}
+            type="email"
+            onChange={(v) => update("email", v)}
+          />
         </div>
       </Section>
       <Section title="Vergi ve adres">
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="VERGİ NO" value="1234567890" />
-          <Field label="MERSİS" value="0123456789012345" />
-          <Field label="ADRES" className="md:col-span-2" value="Caferağa Mah. Moda Cd. 142, Kadıköy İstanbul" />
+          <BoundField
+            label="VERGİ NO"
+            value={form.tax_no}
+            onChange={(v) => update("tax_no", v)}
+          />
+          <BoundField
+            label="MERSİS"
+            value={form.mersis}
+            onChange={(v) => update("mersis", v)}
+          />
+          <BoundField
+            label="ADRES"
+            className="md:col-span-2"
+            value={form.address}
+            onChange={(v) => update("address", v)}
+          />
         </div>
       </Section>
       <Section title="Para / dil / zaman dilimi">
         <div className="grid gap-3 md:grid-cols-3">
-          <Field label="PARA BİRİMİ" value="TRY (₺)" />
-          <Field label="DİL" value="Türkçe" />
-          <Field label="TZ" value="Europe/Istanbul" />
+          <BoundField
+            label="PARA BİRİMİ"
+            value={form.currency}
+            onChange={(v) => update("currency", v)}
+          />
+          <BoundField
+            label="DİL"
+            value={form.lang}
+            onChange={(v) => update("lang", v)}
+          />
+          <BoundField
+            label="TZ"
+            value={form.tz}
+            onChange={(v) => update("tz", v)}
+          />
         </div>
       </Section>
+      <div className="flex justify-end">
+        <button
+          onClick={save}
+          disabled={saving}
+          className="bg-ek-forest hover:bg-ek-forest-2 text-ek-cream rounded-full px-6 py-2 text-sm disabled:opacity-50"
+        >
+          {saving ? "Kaydediliyor..." : "Kaydet"}
+        </button>
+      </div>
     </>
   );
 }
 
-function CategoriesPanel() {
-  const cats = ["Oyuncak", "Hediyelik", "Tablo", "Saat", "Aksesuar", "Ev Dekor"];
+function BoundField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  className?: string;
+}) {
   return (
-    <Section title="Kategoriler" action={<button className="border-ek-line rounded-full border px-3 py-1.5 text-xs">+ Yeni</button>}>
-      <div className="space-y-2">
-        {cats.map((c) => (
-          <div key={c} className="border-ek-line-2 flex items-center gap-3 rounded-md border p-3">
-            <div className="bg-ek-bg-elevated h-8 w-8 rounded" />
-            <span className="flex-1 font-medium">{c}</span>
-            <StatusPill variant="success">Görünür</StatusPill>
-            <button className="text-ek-ink-3 hover:text-ek-ink text-xs">Düzenle</button>
-          </div>
-        ))}
-      </div>
+    <div className={className}>
+      <label className="eyebrow mb-1.5 block">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="border-ek-line bg-ek-bg-elevated focus:border-ek-forest w-full rounded-md border px-3 py-2.5 text-sm outline-none"
+      />
+    </div>
+  );
+}
+
+interface AdminCategory {
+  id: number;
+  slug: string;
+  name: string;
+  description?: string;
+  image_url?: string;
+  sort_order: number;
+  is_visible: boolean;
+  product_count?: number;
+}
+
+function CategoriesPanel() {
+  const [cats, setCats] = useState<AdminCategory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<AdminCategory | null>(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await authedFetch("/catalog/admin/categories/?page_size=100");
+      if (res.ok) {
+        const d = await res.json();
+        setCats(d.results ?? d ?? []);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const toggleVisible = async (c: AdminCategory) => {
+    const res = await authedFetch(`/catalog/admin/categories/${c.slug}/`, {
+      method: "PATCH",
+      body: JSON.stringify({ is_visible: !c.is_visible }),
+    });
+    if (!res.ok) {
+      toast.error(await apiErrorMessage(res));
+      return;
+    }
+    toast.success("Görünürlük güncellendi");
+    load();
+  };
+
+  const save = async (data: Partial<AdminCategory> & { slug?: string }) => {
+    const isNew = !data.slug;
+    const endpoint = isNew
+      ? "/catalog/admin/categories/"
+      : `/catalog/admin/categories/${data.slug}/`;
+    const res = await authedFetch(endpoint, {
+      method: isNew ? "POST" : "PATCH",
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      toast.error(await apiErrorMessage(res));
+      return;
+    }
+    toast.success(isNew ? "Kategori eklendi" : "Kategori güncellendi");
+    setEditing(null);
+    load();
+  };
+
+  const remove = async (c: AdminCategory) => {
+    if ((c.product_count ?? 0) > 0) {
+      toast.error("Bu kategoride ürün var, önce ürünleri taşı");
+      return;
+    }
+    if (!confirm(`"${c.name}" kategorisini silmek istediğine emin misin?`)) return;
+    const res = await authedFetch(`/catalog/admin/categories/${c.slug}/`, { method: "DELETE" });
+    if (!res.ok && res.status !== 204) {
+      toast.error(await apiErrorMessage(res));
+      return;
+    }
+    toast.success("Kategori silindi");
+    load();
+  };
+
+  return (
+    <Section
+      title="Kategoriler"
+      action={
+        <button
+          onClick={() =>
+            setEditing({
+              id: 0,
+              slug: "",
+              name: "",
+              description: "",
+              image_url: "",
+              sort_order: cats.length,
+              is_visible: true,
+            })
+          }
+          className="border-ek-line hover:border-ek-ink rounded-full border px-3 py-1.5 text-xs"
+        >
+          + Yeni
+        </button>
+      }
+    >
+      {loading ? (
+        <div className="text-ek-ink-3 py-6 text-center text-sm">Yükleniyor...</div>
+      ) : (
+        <div className="space-y-2">
+          {cats.map((c) => (
+            <div
+              key={c.id}
+              className="border-ek-line-2 flex items-center gap-3 rounded-md border p-3"
+            >
+              <div className="bg-ek-bg-elevated h-10 w-10 shrink-0 overflow-hidden rounded">
+                {c.image_url && (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={c.image_url} alt={c.name} className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{c.name}</div>
+                <div className="mono">
+                  {c.slug} · {c.product_count ?? 0} ürün · sıra {c.sort_order}
+                </div>
+              </div>
+              <button
+                onClick={() => toggleVisible(c)}
+                className="cursor-pointer"
+                aria-label="Görünürlüğü değiştir"
+              >
+                <StatusPill variant={c.is_visible ? "success" : "neutral"}>
+                  {c.is_visible ? "Görünür" : "Gizli"}
+                </StatusPill>
+              </button>
+              <button
+                onClick={() => setEditing(c)}
+                className="text-ek-ink-3 hover:text-ek-ink text-xs"
+              >
+                Düzenle
+              </button>
+              <button
+                onClick={() => remove(c)}
+                className="text-ek-ink-3 hover:text-ek-warn text-xs"
+              >
+                Sil
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {editing && (
+        <CategoryEditDialog
+          initial={editing}
+          onCancel={() => setEditing(null)}
+          onSave={save}
+        />
+      )}
     </Section>
+  );
+}
+
+function CategoryEditDialog({
+  initial,
+  onCancel,
+  onSave,
+}: {
+  initial: AdminCategory;
+  onCancel: () => void;
+  onSave: (data: Partial<AdminCategory> & { slug?: string }) => Promise<void>;
+}) {
+  const [form, setForm] = useState(initial);
+  const isNew = !initial.slug;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-ek-bg-elevated w-full max-w-md rounded-xl shadow-2xl">
+        <div className="border-ek-line-2 border-b px-5 py-4">
+          <h3 className="h-3">{isNew ? "Yeni kategori" : `Kategori: ${initial.name}`}</h3>
+        </div>
+        <div className="space-y-3 px-5 py-4">
+          <LabeledInput
+            label="AD"
+            value={form.name}
+            onChange={(v) => setForm((p) => ({ ...p, name: v }))}
+          />
+          {isNew && (
+            <LabeledInput
+              label="SLUG (URL parçası — opsiyonel, boşsa isimden türetilir)"
+              value={form.slug}
+              onChange={(v) => setForm((p) => ({ ...p, slug: v }))}
+            />
+          )}
+          <LabeledInput
+            label="AÇIKLAMA"
+            value={form.description ?? ""}
+            onChange={(v) => setForm((p) => ({ ...p, description: v }))}
+          />
+          <LabeledInput
+            label="GÖRSEL URL"
+            value={form.image_url ?? ""}
+            onChange={(v) => setForm((p) => ({ ...p, image_url: v }))}
+            placeholder="https://..."
+          />
+          <LabeledInput
+            label="SIRA (0, 1, 2, ...)"
+            value={String(form.sort_order)}
+            onChange={(v) => setForm((p) => ({ ...p, sort_order: parseInt(v) || 0 }))}
+          />
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.is_visible}
+              onChange={(e) => setForm((p) => ({ ...p, is_visible: e.target.checked }))}
+            />
+            Mağazada görünür
+          </label>
+        </div>
+        <div className="border-ek-line-2 flex gap-2 border-t px-5 py-4">
+          <button
+            onClick={onCancel}
+            className="border-ek-line hover:border-ek-ink flex-1 rounded-full border py-2 text-sm"
+          >
+            İptal
+          </button>
+          <button
+            onClick={() => {
+              const payload: Partial<AdminCategory> & { slug?: string } = {
+                name: form.name,
+                description: form.description,
+                image_url: form.image_url,
+                sort_order: form.sort_order,
+                is_visible: form.is_visible,
+              };
+              if (isNew && form.slug) payload.slug = form.slug;
+              if (!isNew) payload.slug = initial.slug; // for routing
+              onSave(payload);
+            }}
+            disabled={!form.name}
+            className="bg-ek-forest hover:bg-ek-forest-2 text-ek-cream flex-1 rounded-full py-2 text-sm disabled:opacity-40"
+          >
+            Kaydet
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LabeledInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  return (
+    <div>
+      <label className="mono mb-1 block">{label}</label>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="border-ek-line bg-ek-bg-card focus:border-ek-forest w-full rounded-md border px-3 py-2 text-sm outline-none"
+      />
+    </div>
   );
 }
 
@@ -285,8 +714,8 @@ function InvoicingPanel() {
     <>
       <Section title="Entegratör">
         <div className="grid gap-3 md:grid-cols-2">
-          <Field label="SAĞLAYICI" value="Logo İşbaşı" />
-          <Field label="VERGİ DAİRESİ" value="Kadıköy" />
+          <Field label="SAĞLAYICI" value="" />
+          <Field label="VERGİ DAİRESİ" value="" />
         </div>
       </Section>
       <Section title="Otomatik gönderim">

@@ -376,6 +376,47 @@ class AdminSettingViewSet(viewsets.ModelViewSet):
 
 
 # =======================================================================
+# Contact Messages (admin inbox)
+# =======================================================================
+class ContactMessageSerializer(drf_serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = ("id", "name", "email", "subject", "body", "is_handled", "created_at")
+        read_only_fields = ("id", "created_at")
+
+
+class AdminContactViewSet(viewsets.ModelViewSet):
+    queryset = ContactMessage.objects.all().order_by("-created_at")
+    serializer_class = ContactMessageSerializer
+    permission_classes = (permissions.IsAdminUser,)
+    http_method_names = ["get", "patch", "delete", "head", "options"]
+
+
+# =======================================================================
+# Newsletter Subscribers (admin)
+# =======================================================================
+class NewsletterSerializer(drf_serializers.ModelSerializer):
+    class Meta:
+        model = NewsletterSubscriber
+        fields = (
+            "id",
+            "email",
+            "source",
+            "confirmed_at",
+            "unsubscribed_at",
+            "created_at",
+        )
+        read_only_fields = ("id", "created_at")
+
+
+class AdminNewsletterViewSet(viewsets.ModelViewSet):
+    queryset = NewsletterSubscriber.objects.all().order_by("-created_at")
+    serializer_class = NewsletterSerializer
+    permission_classes = (permissions.IsAdminUser,)
+    http_method_names = ["get", "delete", "head", "options"]
+
+
+# =======================================================================
 # Reports (mock download stub)
 # =======================================================================
 @api_view(["GET"])

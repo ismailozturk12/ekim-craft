@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { company, hasPhone } from "@/lib/company";
 
 const FAQ = [
   {
@@ -38,20 +39,22 @@ export default function HelpPage() {
       <h1 className="h-1 mb-6">Yardım</h1>
 
       <div className="mb-8 grid gap-3 md:grid-cols-2">
+        {hasPhone() && (
+          <Link
+            href={`tel:${company.phone.replace(/\s/g, "")}`}
+            className="border-ek-line-2 bg-ek-bg-card hover:border-ek-ink-3 flex items-center gap-3 rounded-xl border p-5 transition-colors"
+          >
+            <div className="bg-ek-cream text-ek-forest flex h-11 w-11 items-center justify-center rounded-full">
+              <Phone size={18} />
+            </div>
+            <div>
+              <div className="text-sm font-medium">Telefon</div>
+              <div className="mono">{company.phone}</div>
+            </div>
+          </Link>
+        )}
         <Link
-          href="tel:08502000000"
-          className="border-ek-line-2 bg-ek-bg-card hover:border-ek-ink-3 flex items-center gap-3 rounded-xl border p-5 transition-colors"
-        >
-          <div className="bg-ek-cream text-ek-forest flex h-11 w-11 items-center justify-center rounded-full">
-            <Phone size={18} />
-          </div>
-          <div>
-            <div className="text-sm font-medium">Telefon</div>
-            <div className="mono">0850 200 00 00</div>
-          </div>
-        </Link>
-        <Link
-          href="mailto:destek@ekimcraft.com"
+          href={`mailto:${company.email}`}
           className="border-ek-line-2 bg-ek-bg-card hover:border-ek-ink-3 flex items-center gap-3 rounded-xl border p-5 transition-colors"
         >
           <div className="bg-ek-cream text-ek-forest flex h-11 w-11 items-center justify-center rounded-full">
@@ -59,7 +62,7 @@ export default function HelpPage() {
           </div>
           <div>
             <div className="text-sm font-medium">E-posta</div>
-            <div className="mono">destek@ekimcraft.com</div>
+            <div className="mono">{company.email}</div>
           </div>
         </Link>
       </div>

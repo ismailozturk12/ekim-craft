@@ -3,7 +3,6 @@ from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from django.core.mail import send_mail
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from rest_framework import generics, permissions, status, viewsets
@@ -53,7 +52,17 @@ class RegisterView(generics.CreateAPIView):
                     },
                     status=201,
                 )
-        return super().create(request, *args, **kwargs)
+        response = super().create(request, *args, **kwargs)
+        # Welcome email — kayıt başarılıysa
+        if response.status_code == 201 and email:
+            try:
+                from apps.notifications.email import send_email
+
+                first_name = (request.data.get("first_name") or "").strip() or "arkadaş"
+                send_email("welcome", to=email, ctx={"first_name": first_name})
+            except Exception:
+                pass
+        return response
 
 
 @api_view(["GET"])
@@ -161,19 +170,15 @@ def password_reset_request(request):
                 "description": "Şifre sıfırlama token'ı",
             },
         )
-        # Dev'de console'a yaz, prod'da Resend
+        # E-posta gönder (SMTP yapılandırılmışsa; değilse console backend'e düşer)
         try:
             from django.conf import settings as dj_settings
 
+            from apps.notifications.email import send_email
+
             site_url = getattr(dj_settings, "SITE_URL", "").rstrip("/") or "https://ekimcraft.com"
             reset_url = f"{site_url}/sifre-sifirla/{token}"
-            send_mail(
-                "Ekim Craft — Şifreni sıfırla",
-                f"Aşağıdaki bağlantı ile şifreni sıfırla:\n\n{reset_url}\n\n1 saat içinde kullanılmazsa geçersiz olur.",
-                None,
-                [user.email],
-                fail_silently=True,
-            )
+            send_email("password_reset", to=user.email, ctx={"reset_url": reset_url})
         except Exception:
             pass
 

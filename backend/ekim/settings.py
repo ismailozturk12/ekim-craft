@@ -261,7 +261,15 @@ EMAIL_BACKEND = env(
     "EMAIL_BACKEND",
     default="django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
 )
+EMAIL_HOST = env("EMAIL_HOST", default="")
+EMAIL_PORT = env.int("EMAIL_PORT", default=587)
+EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = env.bool("EMAIL_USE_SSL", default=False)
+EMAIL_TIMEOUT = env.int("EMAIL_TIMEOUT", default=20)
 DEFAULT_FROM_EMAIL = env("EMAIL_FROM", default="Ekim Craft <no-reply@ekimcraft.com>")
+SUPPORT_EMAIL = env("SUPPORT_EMAIL", default="destek@ekimcraft.com")
 
 # ---------- Security (prod hardening) ----------
 if not DEBUG:

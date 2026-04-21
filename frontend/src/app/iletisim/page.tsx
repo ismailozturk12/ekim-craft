@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Container } from "@/components/ekim/container";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
+import { company, fullAddress, hasAddress, hasPhone } from "@/lib/company";
 import { apiErrorMessage } from "@/store/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
@@ -52,21 +53,36 @@ export default function ContactPage() {
           <div className="grid gap-10 md:grid-cols-[1fr_1.3fr]">
             {/* Sol — iletişim bilgileri */}
             <div className="space-y-4">
-              <InfoCard icon={<Phone size={18} />} title="Telefon" value="0850 200 00 00" sub="09:00-18:00" />
-              <InfoCard icon={<Mail size={18} />} title="E-posta" value="destek@ekimcraft.com" />
-              <InfoCard
-                icon={<MapPin size={18} />}
-                title="Atölyemiz"
-                value="Caferağa Mah. Moda Cd. 142, Kadıköy İstanbul"
-                sub="Randevu ile ziyaret"
-              />
-              <div className="border-ek-line-2 overflow-hidden rounded-xl border">
-                <iframe
-                  title="Harita"
-                  className="h-60 w-full"
-                  src="https://www.openstreetmap.org/export/embed.html?bbox=29.025%2C40.987%2C29.035%2C40.993&layer=mapnik"
+              {hasPhone() && (
+                <InfoCard
+                  icon={<Phone size={18} />}
+                  title="Telefon"
+                  value={company.phone}
+                  sub={company.phoneHours}
                 />
-              </div>
+              )}
+              <InfoCard icon={<Mail size={18} />} title="E-posta" value={company.email} />
+              {hasAddress() && (
+                <>
+                  <InfoCard
+                    icon={<MapPin size={18} />}
+                    title="Atölyemiz"
+                    value={fullAddress()}
+                    sub="Randevu ile ziyaret"
+                  />
+                  {company.mapBbox && (
+                    <div className="border-ek-line-2 overflow-hidden rounded-xl border">
+                      <iframe
+                        title="Harita"
+                        className="h-60 w-full"
+                        src={`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(
+                          company.mapBbox,
+                        )}&layer=mapnik`}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Sağ — form veya success */}

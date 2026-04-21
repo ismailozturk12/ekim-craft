@@ -250,6 +250,42 @@ class CheckoutSerializer(serializers.Serializer):
             order=order, event_type="placed", status="pending", note="Sipariş alındı"
         )
 
+        # Sipariş onay e-postası
+        try:
+            from apps.notifications.email import send_email
+
+            recipient = order.user.email if order.user_id else order.guest_email
+            if recipient:
+                items_lines = []
+                for entry in line_data:
+                    line = f"  • {entry['product'].name} × {entry['raw']['qty']}"
+                    extras = []
+                    if entry["raw"].get("size"):
+                        extras.append(entry["raw"]["size"])
+                    if entry["raw"].get("color"):
+                        extras.append(entry["raw"]["color"])
+                    if extras:
+                        line += f" ({', '.join(extras)})"
+                    items_lines.append(line)
+                payment_labels = dict(Order.PaymentMethod.choices)
+                shipping_labels = dict(Order.ShippingMethod.choices)
+                send_email(
+                    "order_placed",
+                    to=recipient,
+                    ctx={
+                        "recipient_name": validated_data["shipping_address"].get("name", "müşterimiz"),
+                        "order_number": order.number,
+                        "total": f"{total:.2f}",
+                        "payment_method": payment_labels.get(method := order.payment_method, method),
+                        "shipping_method": shipping_labels.get(
+                            sm := order.shipping_method, sm
+                        ),
+                        "items_summary": "\n".join(items_lines) or "  (Detay yok)",
+                    },
+                )
+        except Exception:
+            pass
+
         return order
 
 

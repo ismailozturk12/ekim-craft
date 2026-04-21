@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/ekim/container";
 import { NewsletterForm } from "@/components/ekim/newsletter-form";
+import { company } from "@/lib/company";
 
 const COLUMNS = [
   {
@@ -75,11 +76,11 @@ export function Footer() {
         </div>
 
         <div className="border-ek-cream/10 text-ek-cream/50 mt-16 flex flex-wrap items-center justify-between gap-4 border-t pt-8 text-xs">
-          <div>© {new Date().getFullYear()} Ekim Craft. Tüm hakları saklıdır.</div>
+          <div>© {new Date().getFullYear()} {company.name}. Tüm hakları saklıdır.</div>
           <div className="flex gap-6">
             <span>🇹🇷 Türkçe</span>
             <span>₺ TL</span>
-            <span>MERSİS 0123456789</span>
+            {company.mersis && <span>MERSİS {company.mersis}</span>}
           </div>
         </div>
       </Container>

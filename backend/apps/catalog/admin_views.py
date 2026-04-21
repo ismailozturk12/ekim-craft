@@ -1,17 +1,50 @@
 """Admin product CRUD + image upload + variant CRUD."""
 
-from rest_framework import permissions, status, viewsets
+from rest_framework import permissions, serializers as drf_serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 
-from .models import Product, ProductImage, ProductVariant
+from .models import Category, Product, ProductImage, ProductVariant
 from .serializers import (
     ProductDetailSerializer,
     ProductImageSerializer,
     ProductListSerializer,
     ProductVariantSerializer,
 )
+
+
+class AdminCategorySerializer(drf_serializers.ModelSerializer):
+    product_count = drf_serializers.SerializerMethodField()
+
+    class Meta:
+        model = Category
+        fields = (
+            "id",
+            "slug",
+            "name",
+            "description",
+            "image_url",
+            "parent",
+            "sort_order",
+            "is_visible",
+            "product_count",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("id", "created_at", "updated_at", "product_count")
+
+    def get_product_count(self, obj):
+        return obj.products.count()
+
+
+class AdminCategoryViewSet(viewsets.ModelViewSet):
+    """Admin panel için kategori CRUD."""
+
+    queryset = Category.objects.all().order_by("sort_order", "name")
+    serializer_class = AdminCategorySerializer
+    permission_classes = (permissions.IsAdminUser,)
+    lookup_field = "slug"
 
 
 class AdminProductViewSet(viewsets.ModelViewSet):

@@ -52,6 +52,13 @@ interface ProductForm {
   size_type: string;
   tags: string;
   is_visible: boolean;
+  materials: string;     // virgülle ayrılmış
+  care: string;
+  lead_time: string;
+  artisan: string;
+  artisan_city: string;
+  seo_title: string;
+  seo_description: string;
 }
 
 const CATEGORY_CHIPS = [
@@ -104,6 +111,13 @@ export default function AdminProductsPage() {
       size_type: "one-size",
       tags: "",
       is_visible: true,
+      materials: "",
+      care: "",
+      lead_time: "1-3 gün",
+      artisan: "Ekim Craft",
+      artisan_city: "İstanbul",
+      seo_title: "",
+      seo_description: "",
     });
     setOpen(true);
   };
@@ -127,6 +141,13 @@ export default function AdminProductsPage() {
       size_type: p.size_type,
       tags: (p.tags ?? []).join(", "),
       is_visible: p.is_visible,
+      materials: (p.materials ?? []).join(", "),
+      care: p.care ?? "",
+      lead_time: p.lead_time ?? "1-3 gün",
+      artisan: p.artisan ?? "Ekim Craft",
+      artisan_city: p.artisan_city ?? "İstanbul",
+      seo_title: p.seo_title ?? "",
+      seo_description: p.seo_description ?? "",
     });
     setOpen(true);
   };
@@ -146,6 +167,16 @@ export default function AdminProductsPage() {
         .map((t) => t.trim())
         .filter(Boolean),
       is_visible: form.is_visible,
+      materials: form.materials
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean),
+      care: form.care,
+      lead_time: form.lead_time,
+      artisan: form.artisan,
+      artisan_city: form.artisan_city,
+      seo_title: form.seo_title,
+      seo_description: form.seo_description,
     };
     const isNew = !form.id;
     const res = await authedFetch(
@@ -379,6 +410,49 @@ export default function AdminProductsPage() {
                   </div>
                 </section>
 
+                {/* Detay & Üretim */}
+                <section>
+                  <FormSectionHeader icon={<Info size={14} />} title="Detay & üretim" />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <Field
+                      label="MALZEMELER (virgülle)"
+                      value={form.materials}
+                      placeholder="ahşap (kayın), su bazlı boya"
+                      onChange={(v) => setForm((p) => (p ? { ...p, materials: v } : p))}
+                    />
+                    <Field
+                      label="TEDARİK SÜRESİ"
+                      value={form.lead_time}
+                      placeholder="1-3 gün"
+                      onChange={(v) => setForm((p) => (p ? { ...p, lead_time: v } : p))}
+                    />
+                    <Field
+                      label="ZANAATKAR"
+                      value={form.artisan}
+                      placeholder="Ekim Craft"
+                      onChange={(v) => setForm((p) => (p ? { ...p, artisan: v } : p))}
+                    />
+                    <Field
+                      label="ŞEHİR"
+                      value={form.artisan_city}
+                      placeholder="İstanbul"
+                      onChange={(v) => setForm((p) => (p ? { ...p, artisan_city: v } : p))}
+                    />
+                  </div>
+                  <div className="mt-3">
+                    <label className="mono mb-1.5 block">BAKIM / KULLANIM NOTU</label>
+                    <textarea
+                      rows={2}
+                      value={form.care}
+                      onChange={(e) =>
+                        setForm((p) => (p ? { ...p, care: e.target.value } : p))
+                      }
+                      placeholder="Kuru bez ile silin. Neme maruz bırakmayın."
+                      className="border-ek-line bg-ek-bg-card focus:border-ek-forest w-full resize-y rounded-md border px-3 py-2.5 text-sm outline-none"
+                    />
+                  </div>
+                </section>
+
                 {/* Fiyatlandırma */}
                 <section>
                   <FormSectionHeader icon={<span className="font-serif">₺</span>} title="Fiyatlandırma" />
@@ -457,6 +531,31 @@ export default function AdminProductsPage() {
                       💡 Önce ürünü oluştur — kaydedince varyant ekleyebilirsin.
                     </div>
                   )}
+                </section>
+
+                {/* SEO */}
+                <section>
+                  <FormSectionHeader icon={<TagIcon size={14} />} title="SEO (opsiyonel)" />
+                  <Field
+                    label="SEO BAŞLIK"
+                    value={form.seo_title}
+                    placeholder="Boş bırakırsan ürün adı kullanılır"
+                    onChange={(v) => setForm((p) => (p ? { ...p, seo_title: v } : p))}
+                  />
+                  <div className="mt-3">
+                    <label className="mono mb-1.5 block">SEO AÇIKLAMA (meta description)</label>
+                    <textarea
+                      rows={2}
+                      value={form.seo_description}
+                      onChange={(e) =>
+                        setForm((p) => (p ? { ...p, seo_description: e.target.value } : p))
+                      }
+                      maxLength={160}
+                      placeholder="Arama sonuçlarında görünecek kısa açıklama (max 160 karakter)"
+                      className="border-ek-line bg-ek-bg-card focus:border-ek-forest w-full resize-y rounded-md border px-3 py-2.5 text-sm outline-none"
+                    />
+                    <div className="mono mt-1 text-right">{form.seo_description.length}/160</div>
+                  </div>
                 </section>
 
                 {/* Seçenekler */}

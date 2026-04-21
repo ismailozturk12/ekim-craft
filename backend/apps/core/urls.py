@@ -2,7 +2,9 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .admin_views import (
+    AdminContactViewSet,
     AdminCouponViewSet,
+    AdminNewsletterViewSet,
     AdminSettingViewSet,
     admin_customers,
     admin_stock,
@@ -18,6 +20,8 @@ from .admin_views import (
 router = DefaultRouter()
 router.register(r"admin/coupons", AdminCouponViewSet, basename="admin-coupon")
 router.register(r"admin/settings", AdminSettingViewSet, basename="admin-setting")
+router.register(r"admin/contact-messages", AdminContactViewSet, basename="admin-contact")
+router.register(r"admin/newsletter", AdminNewsletterViewSet, basename="admin-newsletter")
 
 urlpatterns = [
     path("admin/dashboard/", dashboard_stats, name="admin-dashboard"),
