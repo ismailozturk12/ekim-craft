@@ -10,8 +10,15 @@ import { ProductVariantEditor } from "@/components/ekim/product-variant-editor";
 import { Stars } from "@/components/ekim/stars";
 import { StatusPill } from "@/components/ekim/status-pill";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { API_URL } from "@/lib/api/client";
 import { formatTL } from "@/lib/format";
 import { apiErrorMessage, authedFetch } from "@/store/auth";
+
+function resolveImage(u?: string | null): string | null {
+  if (!u) return null;
+  if (u.startsWith("http")) return u;
+  return `${API_URL}${u}`;
+}
 
 interface ProductRow {
   id: number;
@@ -219,8 +226,18 @@ export default function AdminProductsPage() {
                 <tr key={p.id} className="hover:bg-ek-bg-elevated">
                   <td onClick={() => startEdit(p.slug)} className="cursor-pointer px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 shrink-0 overflow-hidden rounded">
-                        <Placeholder tone={toneForProduct(String(p.id))} ratio="1" />
+                      <div className="border-ek-line bg-ek-bg h-10 w-10 shrink-0 overflow-hidden rounded border">
+                        {p.cover_image ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={resolveImage(p.cover_image) ?? ""}
+                            alt={p.name}
+                            className="h-full w-full object-cover"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <Placeholder tone={toneForProduct(String(p.id))} ratio="1" />
+                        )}
                       </div>
                       <div className="min-w-0">
                         <div className="truncate font-medium">{p.name}</div>
