@@ -74,6 +74,7 @@ export interface ApiProductDetail extends ApiProductList {
   lead_time: string;
   total_stock: number;
   in_stock: boolean;
+  made_to_order?: boolean;
   images: Array<{ id: number; image: string | null; alt: string; sort_order: number; is_cover: boolean }>;
   variants: ApiVariant[];
   seo_title: string;

@@ -68,7 +68,11 @@ export default async function Home() {
 
   const rawProducts = productsRes?.results ?? [];
   const products = rawProducts.map(mapProduct);
-  const categories = (categoriesRes ?? []).filter((c: { slug?: string }) => c.slug !== "all");
+  // Boş kategori vitrine ÇIKMAZ (EkimTablo kuralı): "Tablo — 0 ürün" kartı
+  // güven zedeliyor. Ürün eklenince kart kendiliğinden geri gelir.
+  const categories = (categoriesRes ?? []).filter(
+    (c: { slug?: string; count?: number }) => c.slug !== "all" && (c.count ?? 0) > 0,
+  );
   const featured = products.filter((p) => p.tags.includes("Çok satan")).slice(0, 4);
   const newest = products.filter((p) => p.tags.includes("Yeni")).slice(0, 4);
 

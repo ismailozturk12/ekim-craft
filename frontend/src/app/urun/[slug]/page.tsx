@@ -240,6 +240,7 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 oldPrice={oldPrice}
                 variants={variants}
                 productStock={product.stock ?? 0}
+                madeToOrder={product.made_to_order ?? true}
                 customizable={product.customizable}
                 sizeType={product.size_type}
                 leadTime={product.lead_time}

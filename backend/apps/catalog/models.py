@@ -58,7 +58,14 @@ class Product(TimestampedModel):
     tags = models.JSONField(default=list, blank=True)
     customizable = models.BooleanField(default=False)
     size_type = models.CharField(max_length=20, choices=SizeType.choices, default=SizeType.ONE_SIZE)
-    stock = models.PositiveIntegerField(default=0, help_text="Varyant yoksa kullanılır")
+    # Atölyenin varsayılan gerçeği: ürünler SİPARİŞLE üretilir, raf stoğu yoktur.
+    # Bu alan eklenmeden önce stock varsayılanı 0 olduğu için 49 ürünün 49'u
+    # "Stokta yok" görünüyor ve HİÇBİR ŞEY satın alınamıyordu (5 Ağu 2026).
+    # made_to_order=True → stok sınırı yok; tek üretim/sınırlı parçalarda
+    # False yapıp stock sayısı girilir. Varyantlı ürünlerde varyant stoğu geçerlidir.
+    made_to_order = models.BooleanField(default=True,
+        help_text="Siparişle üretilir: stok sınırı uygulanmaz. Tek üretim/sınırlı ürünlerde kapatıp stok girin.")
+    stock = models.PositiveIntegerField(default=0, help_text="Varyant yoksa ve 'siparişle üretilir' kapalıysa kullanılır")
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     review_count = models.PositiveIntegerField(default=0)
     is_visible = models.BooleanField(default=True)
@@ -91,7 +98,10 @@ class Product(TimestampedModel):
 
     @property
     def is_in_stock(self) -> bool:
-        return self.total_stock > 0
+        variants = list(self.variants.all())
+        if variants:
+            return sum(v.stock for v in variants) > 0
+        return self.made_to_order or self.stock > 0
 
 
 class ProductImage(TimestampedModel):

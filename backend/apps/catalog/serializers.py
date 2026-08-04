@@ -140,6 +140,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             "tags",
             "customizable",
             "size_type",
+            "made_to_order",
             "stock",
             "rating",
             "review_count",

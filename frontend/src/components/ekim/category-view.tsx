@@ -35,8 +35,6 @@ const SORT_LABEL: Record<Sort, string> = {
   rating: "En çok beğenilen",
 };
 
-const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-const BRANDS = ["Ekim Craft", "Ekim Atelier", "Ekim Studio"];
 const CATEGORY_COPY: Record<string, string> = {
   all: "Tüm el yapımı koleksiyon — 24 farklı ürün.",
   oyuncak: "3+ yaşa uygun, su bazlı boyalarla bitirilmiş ahşap oyuncaklar.",
@@ -60,8 +58,6 @@ export function CategoryView({
   const [saleOnly, setSaleOnly] = useState(false);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
-  const [selectedBrands, setSelectedBrands] = useState<Set<string>>(new Set());
-  const [selectedSizes, setSelectedSizes] = useState<Set<string>>(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const allColors = useMemo(() => {
@@ -78,9 +74,6 @@ export function CategoryView({
     list = list.filter((p) => p.price <= priceMax);
     if (selectedColors.size > 0) {
       list = list.filter((p) => p.colors.some((c) => selectedColors.has(c.name)));
-    }
-    if (selectedBrands.size > 0) {
-      list = list.filter((p) => selectedBrands.has(p.artisan));
     }
     switch (sort) {
       case "price-asc":
@@ -104,7 +97,7 @@ export function CategoryView({
         });
     }
     return list;
-  }, [products, customOnly, saleOnly, inStockOnly, priceMax, selectedColors, selectedBrands, sort]);
+  }, [products, customOnly, saleOnly, inStockOnly, priceMax, selectedColors, sort]);
 
   const toggleSet = (set: Set<string>, value: string, setter: (s: Set<string>) => void) => {
     const next = new Set(set);
@@ -119,8 +112,6 @@ export function CategoryView({
     setInStockOnly(false);
     setPriceMax(6000);
     setSelectedColors(new Set());
-    setSelectedBrands(new Set());
-    setSelectedSizes(new Set());
   };
 
   const activeFilters =
@@ -128,9 +119,7 @@ export function CategoryView({
     (saleOnly ? 1 : 0) +
     (inStockOnly ? 1 : 0) +
     (priceMax < 6000 ? 1 : 0) +
-    selectedColors.size +
-    selectedBrands.size +
-    selectedSizes.size;
+    selectedColors.size;
 
   return (
     <>
@@ -172,7 +161,9 @@ export function CategoryView({
         >
           Tümü
         </Link>
-        {categories.map((c) => (
+        {categories
+          .filter((c) => (c.count ?? 0) > 0)
+          .map((c) => (
           <Link
             key={c.slug}
             href={`/kategori/${c.slug}`}
@@ -204,10 +195,6 @@ export function CategoryView({
             setPriceMax={setPriceMax}
             selectedColors={selectedColors}
             setSelectedColors={setSelectedColors}
-            selectedBrands={selectedBrands}
-            setSelectedBrands={setSelectedBrands}
-            selectedSizes={selectedSizes}
-            setSelectedSizes={setSelectedSizes}
             toggleSet={toggleSet}
           />
         </aside>
@@ -268,10 +255,6 @@ export function CategoryView({
                 setPriceMax={setPriceMax}
                 selectedColors={selectedColors}
                 setSelectedColors={setSelectedColors}
-                selectedBrands={selectedBrands}
-                setSelectedBrands={setSelectedBrands}
-                selectedSizes={selectedSizes}
-                setSelectedSizes={setSelectedSizes}
                 toggleSet={toggleSet}
                 touchTargets
               />
@@ -324,20 +307,6 @@ export function CategoryView({
                   key={c}
                   label={c}
                   onRemove={() => toggleSet(selectedColors, c, setSelectedColors)}
-                />
-              ))}
-              {Array.from(selectedBrands).map((b) => (
-                <ActiveChip
-                  key={b}
-                  label={b}
-                  onRemove={() => toggleSet(selectedBrands, b, setSelectedBrands)}
-                />
-              ))}
-              {Array.from(selectedSizes).map((s) => (
-                <ActiveChip
-                  key={s}
-                  label={s}
-                  onRemove={() => toggleSet(selectedSizes, s, setSelectedSizes)}
                 />
               ))}
             </div>
@@ -460,10 +429,6 @@ interface FiltersBodyProps {
   setPriceMax: (v: number) => void;
   selectedColors: Set<string>;
   setSelectedColors: (s: Set<string>) => void;
-  selectedBrands: Set<string>;
-  setSelectedBrands: (s: Set<string>) => void;
-  selectedSizes: Set<string>;
-  setSelectedSizes: (s: Set<string>) => void;
   toggleSet: (set: Set<string>, value: string, setter: (s: Set<string>) => void) => void;
   touchTargets?: boolean;
 }
@@ -480,18 +445,11 @@ function FiltersBody({
   setPriceMax,
   selectedColors,
   setSelectedColors,
-  selectedBrands,
-  setSelectedBrands,
-  selectedSizes,
-  setSelectedSizes,
   toggleSet,
   touchTargets = false,
 }: FiltersBodyProps) {
   // Touch mode = mobile; arttırılmış targetler
   const swatchCls = touchTargets ? "h-10 w-10" : "h-7 w-7";
-  const sizeCls = touchTargets
-    ? "min-w-11 min-h-11 rounded-lg px-3.5 py-2 text-sm"
-    : "min-w-9 rounded-full px-3 py-1.5 text-xs";
   const checkboxRow = touchTargets
     ? "flex cursor-pointer items-center gap-3 py-2.5 text-sm"
     : "flex cursor-pointer items-center gap-2 text-sm";
@@ -595,48 +553,7 @@ function FiltersBody({
         </section>
       )}
 
-      {/* Marka */}
-      <section className="border-ek-line-2 border-b py-5">
-        <div className="label mb-3">Marka</div>
-        <div className={touchTargets ? "divide-ek-line-2 divide-y" : "space-y-2"}>
-          {BRANDS.map((b) => (
-            <label key={b} className={checkboxRow}>
-              <input
-                type="checkbox"
-                checked={selectedBrands.has(b)}
-                onChange={() => toggleSet(selectedBrands, b, setSelectedBrands)}
-                className={checkboxCls}
-              />
-              <span className="flex-1">{b}</span>
-            </label>
-          ))}
-        </div>
-      </section>
 
-      {/* Beden */}
-      <section className="pt-5">
-        <div className="label mb-3">Beden</div>
-        <div className={cn("flex flex-wrap", touchTargets ? "gap-2" : "gap-1.5")}>
-          {SIZES.map((s) => {
-            const active = selectedSizes.has(s);
-            return (
-              <button
-                key={s}
-                onClick={() => toggleSet(selectedSizes, s, setSelectedSizes)}
-                className={cn(
-                  "border transition-colors",
-                  sizeCls,
-                  active
-                    ? "bg-ek-ink text-ek-cream border-ek-ink"
-                    : "border-ek-line bg-ek-bg-elevated hover:border-ek-ink-3",
-                )}
-              >
-                {s}
-              </button>
-            );
-          })}
-        </div>
-      </section>
     </>
   );
 }

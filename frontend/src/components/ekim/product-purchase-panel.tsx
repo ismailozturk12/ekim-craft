@@ -37,6 +37,9 @@ interface ProductPurchasePanelProps {
   oldPrice?: number;
   variants: Variant[];
   productStock: number;
+  // Siparişle üretilen (made-to-order) üründe stok sınırı uygulanmaz — atölyenin
+  // varsayılanı budur; stok sayacı yalnız tek üretim/sınırlı parçalarda anlamlı.
+  madeToOrder?: boolean;
   customizable: boolean;
   sizeType: string;
   leadTime: string;
@@ -68,6 +71,7 @@ export function ProductPurchasePanel({
   price,
   variants,
   productStock,
+  madeToOrder = false,
   customizable,
   sizeType,
   leadTime,
@@ -114,6 +118,8 @@ export function ProductPurchasePanel({
   const stockForSize = hasVariants
     ? sizes.find((s) => s.label === selectedSize)?.stock ?? 0
     : productStock;
+  const madeToOrderActive = !hasVariants && madeToOrder;
+  const canBuy = madeToOrderActive || stockForSize > 0;
   const hasPersonalization = !!uploaded || !!customText || !!orderNote;
   const personalizationFee = hasPersonalization ? PERSONALIZATION_PRICE : 0;
   const customSizeFee = customSizeOn ? CUSTOM_SIZE_PRICE : 0;
@@ -458,7 +464,7 @@ export function ProductPurchasePanel({
         </div>
         <button
           onClick={onAdd}
-          disabled={stockForSize === 0}
+          disabled={!canBuy}
           className="bg-ek-forest hover:bg-ek-forest-2 text-ek-cream flex flex-1 items-center justify-center gap-2 rounded-full py-3.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
         >
           <ShoppingBag size={15} strokeWidth={1.75} />
@@ -486,19 +492,21 @@ export function ProductPurchasePanel({
               "inline-block h-2 w-2 rounded-full",
               stockForSize > 5
                 ? "bg-ek-ok"
-                : stockForSize > 0
-                  ? "bg-ek-warn animate-pulse"
+                : stockForSize > 0 || madeToOrderActive
+                  ? "bg-ek-ok"
                   : "bg-ek-ink-4"
             )}
           />
           <span className="text-sm font-medium">
-            {stockForSize > 5
-              ? `Stokta var (${stockForSize} adet)`
-              : stockForSize > 0
-                ? `Az kaldı! Sadece ${stockForSize} adet`
-                : hasVariants
-                  ? "Bu beden tükendi"
-                  : "Stokta yok"}
+            {madeToOrderActive
+              ? "Siparişine özel üretilir"
+              : stockForSize > 5
+                ? `Stokta var (${stockForSize} adet)`
+                : stockForSize > 0
+                  ? `Az kaldı! Sadece ${stockForSize} adet`
+                  : hasVariants
+                    ? "Bu beden tükendi"
+                    : "Stokta yok"}
           </span>
         </div>
         <div className="text-ek-ink-2 mb-1.5 flex items-center gap-2 text-sm">
