@@ -73,8 +73,23 @@ export default async function Home() {
   const categories = (categoriesRes ?? []).filter(
     (c: { slug?: string; count?: number }) => c.slug !== "all" && (c.count ?? 0) > 0,
   );
-  const featured = products.filter((p) => p.tags.includes("Çok satan")).slice(0, 4);
-  const newest = products.filter((p) => p.tags.includes("Yeni")).slice(0, 4);
+  // Etiketli ürün azsa bölümü 4'e tamamla — tek kartlık "vitrin" boş görünüyor.
+  const doldur = (oncelik: Product[], havuz: Product[], hedef: number) => {
+    const secim = [...oncelik.slice(0, hedef)];
+    for (const p of havuz) {
+      if (secim.length >= hedef) break;
+      if (!secim.some((x) => x.id === p.id)) secim.push(p);
+    }
+    return secim;
+  };
+  const cokSatan = products.filter((p) => p.tags.includes("Çok satan"));
+  const yeniler = products.filter((p) => p.tags.includes("Yeni"));
+  const featured = doldur(cokSatan, products, 4);
+  const newest = doldur(
+    yeniler,
+    products.filter((p) => !featured.some((x) => x.id === p.id)),
+    4,
+  );
 
   // Hero: en güçlü 2 ürünün kapağı (Çok satan + Yeni öncelik)
   const hero = [...products]
@@ -138,45 +153,31 @@ export default async function Home() {
                   ))}
                 </div>
               </div>
-              <div className="relative h-[420px] md:h-[540px]">
+              <div className="md:pl-6">
                 {hero[0] ? (
                   <Link
                     href={`/urun/${hero[0].slug}`}
-                    className="cut-frame group absolute right-1 top-3 block w-[74%] overflow-hidden rounded-lg"
+                    className="cut-frame group relative mx-auto block w-full max-w-[440px]"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={resolveImage(hero[0].coverImage) ?? ""}
-                      alt={hero[0].name}
-                      className="aspect-[3/4] w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="eager"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 rounded-b-lg bg-gradient-to-t from-black/65 to-transparent p-4">
+                    <div className="overflow-hidden rounded-lg">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={resolveImage(hero[0].coverImage) ?? ""}
+                        alt={hero[0].name}
+                        className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="eager"
+                      />
+                    </div>
+                    <div className="absolute inset-x-0 bottom-0 rounded-b-lg bg-gradient-to-t from-black/70 to-transparent p-4">
                       <div className="mono text-white/75">ATÖLYEDEN</div>
                       <div className="truncate text-sm font-medium text-white">{hero[0].name}</div>
                     </div>
                   </Link>
                 ) : (
-                  <div className="cut-frame absolute right-1 top-3 w-[74%] overflow-hidden rounded-lg">
-                    <Placeholder tone="terra" label="el yapımı" ratio="3 / 4" />
-                  </div>
-                )}
-                {hero[1] ? (
-                  <Link
-                    href={`/urun/${hero[1].slug}`}
-                    className="group absolute bottom-0 left-0 block w-[48%] overflow-hidden rounded-lg border-4 border-[#3a2a15] shadow-xl"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={resolveImage(hero[1].coverImage) ?? ""}
-                      alt={hero[1].name}
-                      className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="eager"
-                    />
-                  </Link>
-                ) : (
-                  <div className="absolute bottom-0 left-0 w-[48%] overflow-hidden rounded-lg border-4 border-[#3a2a15] shadow-xl">
-                    <Placeholder tone="sage" label="özenle üretildi" ratio="1" />
+                  <div className="cut-frame relative mx-auto w-full max-w-[440px]">
+                    <div className="overflow-hidden rounded-lg">
+                      <Placeholder tone="terra" label="el yapımı" ratio="3 / 4" />
+                    </div>
                   </div>
                 )}
               </div>
@@ -188,7 +189,7 @@ export default async function Home() {
         <section className="bg-ek-bg-elevated py-16">
           <Container>
             <SectionHeader title="Kategoriler" action={{ label: "Tümünü gör", href: "/kategori/all" }} />
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               {categories.map((c: { slug?: string; name?: string; count?: number }) => {
                 const tones = {
                   oyuncak: "terra",
@@ -196,7 +197,7 @@ export default async function Home() {
                   tablo: "sage",
                   saat: "ink",
                   aksesuar: "forest",
-                  dekor: "cream",
+                  dekor: "terra",
                 } as const;
                 const cover = c.slug ? resolveImage(categoryCovers.get(c.slug)) : null;
                 return (

@@ -46,9 +46,9 @@ export function Header() {
       {/* Announcement bar */}
       <div className="bg-ek-walnut-2 text-[#ecdcbc]">
         <Container className="mono flex items-center justify-center gap-4 py-2 text-[11px] uppercase tracking-wider">
-          <span>500 ₺ üstü ücretsiz kargo</span>
-          <span className="text-ek-terra">✂</span>
-          <span>Elde yapıldı · Türkiye'de üretim</span>
+          <span className="whitespace-nowrap">500 ₺ üstü ücretsiz kargo</span>
+          <span className="text-ek-terra hidden sm:inline">·</span>
+          <span className="hidden whitespace-nowrap sm:inline">Elde yapıldı · Türkiye'de üretim</span>
         </Container>
       </div>
 

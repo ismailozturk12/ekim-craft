@@ -127,13 +127,18 @@ export function ProductCard({
           />
         )}
 
-        {/* Badges (sol üst) */}
+        {/* Badges (sol üst) — en fazla 2: indirim > ilk etiket > kişiye özel */}
         <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-          {product.tags.slice(0, 2).map((t) => (
-            <Tag key={t} label={t} variant={t} />
-          ))}
-          {discount !== null && <Tag label={`-${discount}%`} variant="İndirim" />}
-          {product.customizable && <Tag label="✦ Özel" variant="Elde yapıldı" />}
+          {(() => {
+            const chips: Array<{ label: string; variant: React.ComponentProps<typeof Tag>["variant"] }> = [];
+            if (discount !== null) chips.push({ label: `-${discount}%`, variant: "İndirim" });
+            if (product.tags[0]) chips.push({ label: product.tags[0], variant: product.tags[0] });
+            if (chips.length < 2 && product.customizable)
+              chips.push({ label: "✦ Özel", variant: "Elde yapıldı" });
+            return chips
+              .slice(0, 2)
+              .map((c) => <Tag key={c.label} label={c.label} variant={c.variant} />);
+          })()}
         </div>
 
         {/* Wishlist (sağ üst) */}

@@ -465,7 +465,7 @@ export function ProductPurchasePanel({
         <button
           onClick={onAdd}
           disabled={!canBuy}
-          className="bg-ek-forest hover:bg-ek-forest-2 text-ek-cream flex flex-1 items-center justify-center gap-2 rounded-full py-3.5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60"
+          className="bg-ek-terra hover:bg-ek-terra-2 flex flex-1 items-center justify-center gap-2 rounded-full py-3.5 text-sm font-semibold text-[#1c1204] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <ShoppingBag size={15} strokeWidth={1.75} />
           Sepete ekle · {formatTL(totalPrice)}
