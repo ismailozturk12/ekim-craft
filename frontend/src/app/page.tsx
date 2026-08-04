@@ -99,92 +99,90 @@ export default async function Home() {
     <>
       <Header />
       <main className="flex-1">
-        {/* HERO */}
-        <Container as="section" className="py-16">
-          <div className="grid items-end gap-10 md:grid-cols-[1.2fr_1fr]">
-            <div>
-              <div className="mono mb-6">BAHAR 2026 KOLEKSİYONU</div>
-              <h1 className="h-display mb-8">
-                El yapımı,
-                <br />
-                <em>kalbinden.</em>
-              </h1>
-              <p className="text-ek-ink-2 mb-8 max-w-md text-base leading-relaxed md:text-lg">
-                Oyuncak, hediyelik, tablo, saat, aksesuar, dekor — özenle üretilen, kişiye özel ve tek üretim
-                ürünler. Kapına 1-3 günde gelir.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/kategori/all"
-                  className="bg-ek-forest hover:bg-ek-forest-2 text-ek-cream inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-colors"
-                >
-                  Alışverişe başla →
-                </Link>
-                <Link
-                  href="/kategori/oyuncak"
-                  className="border-ek-line hover:border-ek-ink-3 inline-flex items-center rounded-full border px-6 py-3 text-sm font-medium transition-colors"
-                >
-                  Oyuncakları gör
-                </Link>
+        {/* HERO — atölye tezgâhı: koyu ceviz zemin, bal vurgu, kesim çizgisi çerçeve */}
+        <section className="walnut relative overflow-hidden">
+          <Container className="py-16 md:py-24">
+            <div className="grid items-center gap-12 md:grid-cols-[1.15fr_1fr]">
+              <div>
+                <div className="font-serif text-ek-terra mb-5 text-lg italic md:text-xl">
+                  İstanbul&apos;daki atölyemizden, elle —
+                </div>
+                <h1 className="h-display mb-7 text-[#F6EDD9]">
+                  Ahşaptan,
+                  <br />
+                  <em>adına özel.</em>
+                </h1>
+                <p className="mb-9 max-w-md text-base leading-relaxed text-[#D9C7A4] md:text-lg">
+                  Kavak kontrplak lazerle kesilir, elde zımparalanır, adınla paketlenir.
+                  Oyuncaktan ev dekoruna her parça, siparişinin üzerine üretilir.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/kategori/all"
+                    className="bg-ek-terra hover:bg-ek-terra-2 inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-[#1c1204] transition-colors"
+                  >
+                    Atölyeden seç →
+                  </Link>
+                  <Link
+                    href="/kategori/all?customizable=true"
+                    className="hover:border-ek-terra hover:text-ek-terra inline-flex items-center rounded-full border border-[#5d4a2e] px-7 py-3.5 text-sm font-medium text-[#ecdcbc] transition-colors"
+                  >
+                    Kişiye özel yaptır
+                  </Link>
+                </div>
+                <div className="mt-10 flex flex-wrap gap-2.5">
+                  {["Siparişle üretim · 48 saat", "Kapına 2-4 günde", "14 gün koşulsuz iade"].map((t) => (
+                    <span key={t} className="kraft-tag">
+                      {t}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div className="border-ek-line mt-10 flex flex-wrap gap-8 border-t pt-6">
-                {[
-                  { n: `${products.length}+`, l: "Ürün" },
-                  { n: String(categories.length), l: "Kategori" },
-                  { n: "4.9", l: "Puan" },
-                  { n: "1-3g", l: "Kargo" },
-                ].map((s) => (
-                  <div key={s.l}>
-                    <div className="font-serif text-3xl">{s.n}</div>
-                    <div className="mono mt-0.5">{s.l}</div>
+              <div className="relative h-[420px] md:h-[540px]">
+                {hero[0] ? (
+                  <Link
+                    href={`/urun/${hero[0].slug}`}
+                    className="cut-frame group absolute right-1 top-3 block w-[74%] overflow-hidden rounded-lg"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resolveImage(hero[0].coverImage) ?? ""}
+                      alt={hero[0].name}
+                      className="aspect-[3/4] w-full rounded-lg object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="eager"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 rounded-b-lg bg-gradient-to-t from-black/65 to-transparent p-4">
+                      <div className="mono text-white/75">ATÖLYEDEN</div>
+                      <div className="truncate text-sm font-medium text-white">{hero[0].name}</div>
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="cut-frame absolute right-1 top-3 w-[74%] overflow-hidden rounded-lg">
+                    <Placeholder tone="terra" label="el yapımı" ratio="3 / 4" />
                   </div>
-                ))}
+                )}
+                {hero[1] ? (
+                  <Link
+                    href={`/urun/${hero[1].slug}`}
+                    className="group absolute bottom-0 left-0 block w-[48%] overflow-hidden rounded-lg border-4 border-[#3a2a15] shadow-xl"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={resolveImage(hero[1].coverImage) ?? ""}
+                      alt={hero[1].name}
+                      className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      loading="eager"
+                    />
+                  </Link>
+                ) : (
+                  <div className="absolute bottom-0 left-0 w-[48%] overflow-hidden rounded-lg border-4 border-[#3a2a15] shadow-xl">
+                    <Placeholder tone="sage" label="özenle üretildi" ratio="1" />
+                  </div>
+                )}
               </div>
             </div>
-            <div className="relative h-[420px] md:h-[540px]">
-              {hero[0] ? (
-                <Link
-                  href={`/urun/${hero[0].slug}`}
-                  className="group absolute right-0 top-0 block w-[78%] overflow-hidden rounded-lg shadow-lg"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resolveImage(hero[0].coverImage) ?? ""}
-                    alt={hero[0].name}
-                    className="aspect-[3/4] w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="eager"
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-                    <div className="mono text-white/80">{hero[0].artisanCity.toUpperCase()}</div>
-                    <div className="truncate text-sm font-medium text-white">{hero[0].name}</div>
-                  </div>
-                </Link>
-              ) : (
-                <div className="absolute right-0 top-0 w-[78%] overflow-hidden rounded-lg shadow-lg">
-                  <Placeholder tone="terra" label="el yapımı" ratio="3 / 4" />
-                </div>
-              )}
-              {hero[1] ? (
-                <Link
-                  href={`/urun/${hero[1].slug}`}
-                  className="border-ek-bg bg-ek-bg group absolute bottom-0 left-0 block w-[52%] overflow-hidden rounded-lg border-4 shadow-xl"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resolveImage(hero[1].coverImage) ?? ""}
-                    alt={hero[1].name}
-                    className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="eager"
-                  />
-                </Link>
-              ) : (
-                <div className="border-ek-bg bg-ek-bg absolute bottom-0 left-0 w-[52%] overflow-hidden rounded-lg border-4 shadow-xl">
-                  <Placeholder tone="sage" label="özenle üretildi" ratio="1" />
-                </div>
-              )}
-            </div>
-          </div>
-        </Container>
+          </Container>
+        </section>
 
         {/* KATEGORİLER */}
         <section className="bg-ek-bg-elevated py-16">
@@ -225,7 +223,7 @@ export default async function Home() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                     <div className="absolute inset-x-5 bottom-5 text-white">
                       <div className="font-serif text-xl">{c.name}</div>
-                      <div className="mono text-white/80">{c.count} ürün →</div>
+                      <div className="mono text-[#e8b96a]">{c.count} ürün →</div>
                     </div>
                   </Link>
                 );
@@ -233,6 +231,36 @@ export default async function Home() {
             </div>
           </Container>
         </section>
+
+        {/* ATÖLYE SÜRECİ — sipariş gerçek bir sıra izlediği için numaralı */}
+        <Container as="section" className="py-20">
+          <SectionHeader eyebrow="NASIL ÇALIŞIR" title="Tezgâhtan kapına" />
+          <div className="grid gap-5 md:grid-cols-3">
+            {[
+              {
+                n: "1",
+                t: "Seç — istersen adını yaz",
+                d: "Ürünü seç; isim, tarih ya da fotoğrafla kişiselleştir. Tek üretim parçalarda acele et, bir tane var.",
+              },
+              {
+                n: "2",
+                t: "Atölyede üretilir",
+                d: "Kavak kontrplak lazerle kesilir, elde zımparalanır, su bazlı boyayla bitirilir — 48 saat içinde.",
+              },
+              {
+                n: "3",
+                t: "2-4 günde kapında",
+                d: "Pamuklu kesesinde, koruyucu paketle kargoya verilir. 14 gün koşulsuz iade hakkın saklı.",
+              },
+            ].map((a) => (
+              <div key={a.n} className="border-ek-line bg-ek-bg-card rounded-lg border p-6">
+                <span className="kraft-tag mb-4">ADIM {a.n} / 3</span>
+                <div className="text-ek-ink mb-2 text-lg font-semibold">{a.t}</div>
+                <p className="text-ek-ink-2 text-sm leading-relaxed">{a.d}</p>
+              </div>
+            ))}
+          </div>
+        </Container>
 
         {/* ÇOK SATANLAR */}
         {featured.length > 0 && (
@@ -268,15 +296,15 @@ export default async function Home() {
 
         {/* FEATURE STRIP */}
         <Container as="section" className="pb-20">
-          <div className="bg-ek-bg-elevated border-ek-line-2 grid gap-6 rounded-xl border p-8 md:grid-cols-4">
+          <div className="border-ek-terra/40 bg-ek-bg-card grid gap-6 rounded-xl border border-dashed p-8 md:grid-cols-4">
             {[
-              { i: Truck, t: "500₺ üstü ücretsiz kargo", s: "Tüm Türkiye, 1-3 gün" },
+              { i: Truck, t: "500₺ üstü ücretsiz kargo", s: "Tüm Türkiye, 2-4 gün" },
               { i: Sparkles, t: "14 gün iade hakkı", s: "Koşulsuz, ücretsiz" },
-              { i: Heart, t: "El yapımı kalite", s: "Her ürün özenle seçilir" },
+              { i: Heart, t: "El yapımı kalite", s: "Her parça elden geçer" },
               { i: Pencil, t: "Kişiselleştirme", s: "İsim, görsel, özel ölçü" },
             ].map((f, i) => (
               <div key={i} className="flex items-start gap-3">
-                <div className="bg-ek-cream text-ek-forest flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
+                <div className="bg-ek-cream text-ek-terra-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full">
                   <f.i size={20} strokeWidth={1.75} />
                 </div>
                 <div>

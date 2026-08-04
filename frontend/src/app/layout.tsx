@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Fraunces, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { JsonLd } from "@/components/seo/json-ld";
 import { SITE_URL, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
@@ -15,6 +15,12 @@ const fraunces = Fraunces({
 const interTight = Inter_Tight({
   subsets: ["latin", "latin-ext"],
   variable: "--font-inter-tight",
+  display: "swap",
+});
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-bricolage",
   display: "swap",
 });
 
@@ -89,7 +95,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html
       lang="tr"
       suppressHydrationWarning
-      className={`${fraunces.variable} ${interTight.variable} ${jetbrains.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${interTight.variable} ${jetbrains.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="bg-background text-foreground flex min-h-full flex-col">
         <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />

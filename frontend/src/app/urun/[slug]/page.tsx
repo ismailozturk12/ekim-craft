@@ -192,39 +192,45 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
                 {product.artisan} · {product.artisan_city}
               </div>
               <h1
-                className="font-serif mb-5"
+                className="font-heading mb-5 font-bold"
                 style={{
                   fontSize: "clamp(28px, 3vw, 38px)",
-                  lineHeight: 1.2,
-                  letterSpacing: "-0.01em",
+                  lineHeight: 1.12,
+                  letterSpacing: "-0.02em",
                 }}
               >
                 {product.name}
               </h1>
 
-              <div className="mb-6 flex items-center gap-2">
-                <div className="flex items-center">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <svg
-                      key={i}
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill={i <= Math.round(rating) ? "var(--ek-terra)" : "none"}
-                      stroke="var(--ek-terra)"
-                      strokeWidth="1.5"
-                    >
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                    </svg>
-                  ))}
+              {product.review_count > 0 ? (
+                <div className="mb-6 flex items-center gap-2">
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <svg
+                        key={i}
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill={i <= Math.round(rating) ? "var(--ek-terra)" : "none"}
+                        stroke="var(--ek-terra)"
+                        strokeWidth="1.5"
+                      >
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="mono">
+                    {rating.toFixed(1).replace(".", ",")} · {product.review_count} değerlendirme
+                  </span>
                 </div>
-                <span className="mono">
-                  {rating.toFixed(1).replace(".", ",")} · {product.review_count} değerlendirme
-                </span>
-              </div>
+              ) : (
+                <div className="mb-6">
+                  <span className="kraft-tag">ATÖLYE İŞİ · SİPARİŞLE ÜRETİLİR</span>
+                </div>
+              )}
 
               <div className="mb-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-serif text-4xl">{formatTL(price)}</span>
+                <span className="font-heading text-4xl font-bold">{formatTL(price)}</span>
                 {oldPrice && (
                   <span className="text-ek-ink-4 text-base line-through">{formatTL(oldPrice)}</span>
                 )}

@@ -43,14 +43,14 @@ const COLUMNS = [
 
 export function Footer() {
   return (
-    <footer className="bg-ek-ink text-ek-cream mt-16">
+    <footer className="walnut mt-16">
       <Container className="py-16">
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Link href="/" className="flex items-center gap-2">
-              <span className="font-serif text-2xl">Ekim</span>
+              <span className="font-heading text-2xl font-bold tracking-tight">Ekim</span>
               <span className="bg-ek-terra h-2 w-2 rounded-full" />
-              <span className="font-serif text-2xl">Craft</span>
+              <span className="font-serif text-2xl italic">Craft</span>
             </Link>
             <p className="text-ek-cream/70 mt-4 max-w-sm text-sm leading-relaxed">
               El yapımı, kişiye özel ve tek üretim ürünler. 2019'dan beri İstanbul atölyemizden.

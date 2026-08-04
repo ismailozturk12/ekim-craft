@@ -22,6 +22,10 @@ interface CategoryViewProps {
   description?: string;
   categories: ApiCategory[];
   products: Product[];
+  /* URL'den gelen başlangıç filtreleri (?tag= / ?customizable= / ?on_sale=) */
+  initialTag?: string;
+  initialCustomOnly?: boolean;
+  initialSaleOnly?: boolean;
 }
 
 type Layout = "masonry" | "grid" | "list";
@@ -50,12 +54,16 @@ export function CategoryView({
   categoryName,
   categories,
   products,
+  initialTag,
+  initialCustomOnly,
+  initialSaleOnly,
 }: CategoryViewProps) {
   const [layout, setLayout] = useState<Layout>("grid");
   const [sort, setSort] = useState<Sort>("featured");
   const [priceMax, setPriceMax] = useState(6000);
-  const [customOnly, setCustomOnly] = useState(false);
-  const [saleOnly, setSaleOnly] = useState(false);
+  const [tagOnly, setTagOnly] = useState<string | null>(initialTag ?? null);
+  const [customOnly, setCustomOnly] = useState(initialCustomOnly ?? false);
+  const [saleOnly, setSaleOnly] = useState(initialSaleOnly ?? false);
   const [inStockOnly, setInStockOnly] = useState(false);
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -68,6 +76,7 @@ export function CategoryView({
 
   const filtered = useMemo(() => {
     let list = [...products];
+    if (tagOnly) list = list.filter((p) => (p.tags as string[]).includes(tagOnly));
     if (customOnly) list = list.filter((p) => p.customizable);
     if (saleOnly) list = list.filter((p) => !!p.oldPrice);
     if (inStockOnly) list = list.filter((p) => p.stock > 0);
@@ -97,7 +106,7 @@ export function CategoryView({
         });
     }
     return list;
-  }, [products, customOnly, saleOnly, inStockOnly, priceMax, selectedColors, sort]);
+  }, [products, tagOnly, customOnly, saleOnly, inStockOnly, priceMax, selectedColors, sort]);
 
   const toggleSet = (set: Set<string>, value: string, setter: (s: Set<string>) => void) => {
     const next = new Set(set);
@@ -107,6 +116,7 @@ export function CategoryView({
   };
 
   const reset = () => {
+    setTagOnly(null);
     setCustomOnly(false);
     setSaleOnly(false);
     setInStockOnly(false);
@@ -115,6 +125,7 @@ export function CategoryView({
   };
 
   const activeFilters =
+    (tagOnly ? 1 : 0) +
     (customOnly ? 1 : 0) +
     (saleOnly ? 1 : 0) +
     (inStockOnly ? 1 : 0) +
@@ -292,6 +303,7 @@ export function CategoryView({
             </button>
 
             <div className="flex flex-wrap gap-2">
+              {tagOnly && <ActiveChip label={tagOnly} onRemove={() => setTagOnly(null)} />}
               {customOnly && (
                 <ActiveChip label="Kişiselleştirilebilir" onRemove={() => setCustomOnly(false)} />
               )}

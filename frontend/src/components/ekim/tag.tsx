@@ -1,13 +1,15 @@
 import { cn } from "@/lib/utils";
 import type { ProductTag } from "@/types/catalog";
 
-const TAG_STYLES: Record<ProductTag | "default", string> = {
-  Yeni: "bg-ek-forest text-ek-cream",
-  "Çok satan": "bg-ek-terra text-ek-cream",
-  Sınırlı: "bg-ek-warn text-white",
-  İndirim: "bg-ek-terra-2 text-white",
-  "Elde yapıldı": "bg-ek-sage text-ek-ink",
-  default: "bg-ek-ink text-ek-cream",
+/* Kraft etiket görünümü: zemin hep kese rengi, tür farkı delik/nokta renginde.
+   Renkli blok rozetler tasarım yenilemesinde (5 Ağu 2026) emekli edildi. */
+const TAG_DOTS: Record<ProductTag | "default", string> = {
+  Yeni: "bg-ek-forest",
+  "Çok satan": "bg-ek-terra",
+  Sınırlı: "bg-ek-warn",
+  İndirim: "bg-ek-terra-2",
+  "Elde yapıldı": "bg-ek-sage",
+  default: "bg-ek-ink",
 };
 
 export function Tag({
@@ -19,15 +21,15 @@ export function Tag({
   variant?: ProductTag | "default";
   className?: string;
 }) {
-  const style = TAG_STYLES[variant] ?? TAG_STYLES.default;
+  const dot = TAG_DOTS[variant] ?? TAG_DOTS.default;
   return (
     <span
       className={cn(
-        "font-mono inline-flex items-center rounded-sm px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em]",
-        style,
+        "font-mono bg-ek-cream/95 text-ek-ink-2 border-ek-ink/15 inline-flex items-center gap-1.5 rounded-[3px_999px_999px_3px] border py-0.5 pl-1.5 pr-2.5 text-[10px] font-medium uppercase tracking-[0.08em]",
         className
       )}
     >
+      <span className={cn("h-1.5 w-1.5 rounded-full", dot)} />
       {label}
     </span>
   );

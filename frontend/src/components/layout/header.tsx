@@ -44,10 +44,10 @@ export function Header() {
   return (
     <>
       {/* Announcement bar */}
-      <div className="bg-ek-forest text-ek-cream">
+      <div className="bg-ek-walnut-2 text-[#ecdcbc]">
         <Container className="mono flex items-center justify-center gap-4 py-2 text-[11px] uppercase tracking-wider">
           <span>500 ₺ üstü ücretsiz kargo</span>
-          <span className="opacity-50">·</span>
+          <span className="text-ek-terra">✂</span>
           <span>Elde yapıldı · Türkiye'de üretim</span>
         </Container>
       </div>
@@ -238,9 +238,9 @@ export function Header() {
 
           {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2">
-            <span className="h-1 !text-[22px] !leading-none">Ekim</span>
+            <span className="font-heading text-[22px] font-bold leading-none tracking-tight">Ekim</span>
             <span className="bg-ek-terra h-2 w-2 rounded-full" />
-            <span className="font-serif text-[22px] leading-none">Craft</span>
+            <span className="font-serif text-[22px] italic leading-none">Craft</span>
           </Link>
 
           {/* Desktop nav */}

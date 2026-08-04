@@ -87,14 +87,14 @@ export function ProductCard({
           <div>
             <div className="mono mb-1">{product.artisan}</div>
             <div className="text-ek-ink text-[15px] font-medium leading-snug">{product.name}</div>
-            <Stars rating={product.rating} className="mt-2" />
+            {product.reviews > 0 && <Stars rating={product.rating} className="mt-2" />}
           </div>
           <div className="flex items-end justify-between">
             <div>
               {product.oldPrice && (
                 <span className="text-ek-ink-4 mr-2 text-sm line-through">{formatTL(product.oldPrice)}</span>
               )}
-              <span className="font-serif text-xl">{formatTL(product.price)}</span>
+              <span className="font-heading text-xl font-bold">{formatTL(product.price)}</span>
             </div>
             <button
               onClick={toggle}
@@ -176,9 +176,9 @@ export function ProductCard({
             {product.oldPrice && (
               <span className="text-ek-ink-4 text-sm line-through">{formatTL(product.oldPrice)}</span>
             )}
-            <span className="font-serif text-lg">{formatTL(product.price)}</span>
+            <span className="font-heading text-lg font-bold">{formatTL(product.price)}</span>
           </div>
-          <Stars rating={product.rating} size={12} />
+          {product.reviews > 0 && <Stars rating={product.rating} size={12} />}
         </div>
         {/* Renk önizlemesi */}
         {product.colors.length > 0 && (

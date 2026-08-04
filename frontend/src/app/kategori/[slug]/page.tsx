@@ -70,10 +70,13 @@ function mapProduct(x: Awaited<ReturnType<typeof catalog.listProducts>>["results
 
 export default async function CategoryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ tag?: string; customizable?: string; on_sale?: string }>;
 }) {
   const { slug } = await params;
+  const sp = await searchParams;
 
   const categoriesRaw = await catalog.listCategories().catch(() => []);
   const categories = categoriesRaw.filter((c) => c.slug !== "all");
@@ -117,6 +120,9 @@ export default async function CategoryPage({
             categoryName={current.name}
             categories={categories}
             products={products}
+            initialTag={sp.tag}
+            initialCustomOnly={sp.customizable === "true"}
+            initialSaleOnly={sp.on_sale === "true"}
           />
         </Container>
       </main>
