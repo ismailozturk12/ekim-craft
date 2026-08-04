@@ -12,24 +12,25 @@
 
 :root {
   /* Ekim Craft paleti */
-  /* "Atölye tezgâhı" paleti (5 Ağu 2026 yenilemesi): zemin açık kavak
-     kontrplak, vurgu lazerin ahşapta bıraktığı BAL/karamel yanık kenar,
-     koyu bölümler işlenmiş ceviz. Yeşil (çam) ikincil role indi. */
-  --ek-bg: #f3e7ce;
-  --ek-bg-elevated: #f9f0dd;
-  --ek-bg-card: #fffaef;
-  --ek-ink: #221708;
-  --ek-ink-2: #46351f;
-  --ek-ink-3: #7a664a;
-  --ek-ink-4: #a8937a;
-  --ek-line: #dcc9a4;
-  --ek-line-2: #e9dbbc;
+  /* Açık palet (5 Ağu 2026, ikinci tur): İsmail koyu ceviz ağırlıklı ilk
+     turu reddetti — iki sitenin de hissi AÇIK/ferah olacak (EkimTablo gibi).
+     Zemin sıcak beyaz, vurgu BAL/karamel (lazer yanığı), ceviz yalnız
+     footer/duyuru gibi dar bantlarda. */
+  --ek-bg: #fcfaf5;
+  --ek-bg-elevated: #f6f1e6;
+  --ek-bg-card: #ffffff;
+  --ek-ink: #261a0b;
+  --ek-ink-2: #4d3d28;
+  --ek-ink-3: #8a7a63;
+  --ek-ink-4: #b5a68f;
+  --ek-line: #e8dfcc;
+  --ek-line-2: #f1ebdc;
   --ek-forest: #46523a;
   --ek-forest-2: #333d2a;
   --ek-terra: #bd7714;
   --ek-terra-2: #965d0b;
   --ek-sage: #8a9a7b;
-  --ek-cream: #eddcb6;
+  --ek-cream: #f3e8cd;
   --ek-walnut: #241708;
   --ek-walnut-2: #180f04;
   --ek-warn: #b23a2a;
@@ -70,9 +71,9 @@
   --radius-pill: 9999px;
 
   /* Gölge */
-  --shadow-sm: 0 1px 2px rgba(34, 23, 8, 0.05), 0 1px 3px rgba(34, 23, 8, 0.04);
-  --shadow: 0 4px 16px rgba(34, 23, 8, 0.06), 0 1px 3px rgba(34, 23, 8, 0.04);
-  --shadow-lg: 0 24px 60px rgba(34, 23, 8, 0.12), 0 6px 20px rgba(34, 23, 8, 0.08);
+  --shadow-sm: 0 1px 2px rgba(38, 26, 11, 0.04), 0 1px 3px rgba(38, 26, 11, 0.03);
+  --shadow: 0 4px 16px rgba(38, 26, 11, 0.05), 0 1px 3px rgba(38, 26, 11, 0.03);
+  --shadow-lg: 0 24px 60px rgba(38, 26, 11, 0.10), 0 6px 20px rgba(38, 26, 11, 0.06);
 
   /* Sidebar (admin) */
   --sidebar: var(--ek-forest);
@@ -182,9 +183,9 @@
   --radius-lg: 14px;
   --radius-xl: 20px;
 
-  --shadow-sm: 0 1px 2px rgba(34, 23, 8, 0.05), 0 1px 3px rgba(34, 23, 8, 0.04);
-  --shadow: 0 4px 16px rgba(34, 23, 8, 0.06);
-  --shadow-lg: 0 24px 60px rgba(34, 23, 8, 0.12);
+  --shadow-sm: 0 1px 2px rgba(38, 26, 11, 0.04), 0 1px 3px rgba(38, 26, 11, 0.03);
+  --shadow: 0 4px 16px rgba(38, 26, 11, 0.05);
+  --shadow-lg: 0 24px 60px rgba(38, 26, 11, 0.10);
 }
 
 @layer base {

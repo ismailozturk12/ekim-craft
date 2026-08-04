@@ -124,20 +124,20 @@ export default async function Home() {
           <HeroBannerSlider banners={banners} />
         </Container>
 
-        {/* HERO — atölye tezgâhı: koyu ceviz zemin, bal vurgu, kesim çizgisi çerçeve */}
-        <section className="walnut relative overflow-hidden">
-          <Container className="py-16 md:py-24">
+        {/* HERO — açık zemin, bal vurgu, kesim çizgisi çerçeve */}
+        <section className="relative overflow-hidden bg-gradient-to-b from-[#f6f0e2] via-[#faf6ec] to-ek-bg">
+          <Container className="py-12 md:py-20">
             <div className="grid items-center gap-12 md:grid-cols-[1.15fr_1fr]">
               <div>
-                <div className="font-serif text-ek-terra mb-5 text-lg italic md:text-xl">
+                <div className="font-serif text-ek-terra-2 mb-5 text-lg italic md:text-xl">
                   İstanbul&apos;daki atölyemizden, elle —
                 </div>
-                <h1 className="h-display mb-7 text-[#F6EDD9]">
+                <h1 className="h-display text-ek-ink mb-7">
                   Ahşaptan,
                   <br />
                   <em>adına özel.</em>
                 </h1>
-                <p className="mb-9 max-w-md text-base leading-relaxed text-[#D9C7A4] md:text-lg">
+                <p className="text-ek-ink-2 mb-9 max-w-md text-base leading-relaxed md:text-lg">
                   Kavak kontrplak lazerle kesilir, elde zımparalanır, adınla paketlenir.
                   Oyuncaktan ev dekoruna her parça, siparişinin üzerine üretilir.
                 </p>
@@ -150,7 +150,7 @@ export default async function Home() {
                   </Link>
                   <Link
                     href="/kategori/all?customizable=true"
-                    className="hover:border-ek-terra hover:text-ek-terra inline-flex items-center rounded-full border border-[#5d4a2e] px-7 py-3.5 text-sm font-medium text-[#ecdcbc] transition-colors"
+                    className="border-ek-line text-ek-ink hover:border-ek-terra hover:text-ek-terra-2 bg-ek-bg-card inline-flex items-center rounded-full border px-7 py-3.5 text-sm font-medium transition-colors"
                   >
                     Kişiye özel yaptır
                   </Link>
