@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Heart, Pencil, Sparkles, Truck } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/ekim/container";
+import { HeroBannerSlider, type HeroBanner } from "@/components/ekim/hero-banner-slider";
 import { Placeholder } from "@/components/ekim/placeholder";
 import { ProductCard } from "@/components/ekim/product-card";
 import { SectionHeader } from "@/components/ekim/section-header";
@@ -61,12 +62,16 @@ function mapProduct(p: unknown): Product {
 }
 
 export default async function Home() {
-  const [productsRes, categoriesRes] = await Promise.all([
+  const [productsRes, categoriesRes, bannersRes] = await Promise.all([
     catalog.listProducts({ page_size: 60 }).catch(() => null),
     catalog.listCategories().catch(() => null),
+    fetch(`${API_URL}/api/v1/core/banners/`, { next: { revalidate: 60 } })
+      .then((r) => (r.ok ? r.json() : { banners: [] }))
+      .catch(() => ({ banners: [] })) as Promise<{ banners: HeroBanner[] }>,
   ]);
 
   const rawProducts = productsRes?.results ?? [];
+  const banners = bannersRes?.banners ?? [];
   const products = rawProducts.map(mapProduct);
   // Boş kategori vitrine ÇIKMAZ (EkimTablo kuralı): "Tablo — 0 ürün" kartı
   // güven zedeliyor. Ürün eklenince kart kendiliğinden geri gelir.
@@ -114,6 +119,11 @@ export default async function Home() {
     <>
       <Header />
       <main className="flex-1">
+        {/* BANNER ŞERİDİ — panelden yönetilir; boşsa markalı hazır slaytlar döner */}
+        <Container className="pb-2 pt-3">
+          <HeroBannerSlider banners={banners} />
+        </Container>
+
         {/* HERO — atölye tezgâhı: koyu ceviz zemin, bal vurgu, kesim çizgisi çerçeve */}
         <section className="walnut relative overflow-hidden">
           <Container className="py-16 md:py-24">

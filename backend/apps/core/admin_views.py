@@ -10,6 +10,7 @@ from django.db.models import Count, F, Q, Sum
 from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.throttling import AnonRateThrottle
 
 
@@ -23,6 +24,7 @@ from rest_framework.response import Response
 
 from apps.catalog.models import Product, ProductVariant
 from apps.orders.models import Coupon, Order
+from .models import HeroBanner
 from apps.notifications.models import Notification
 
 User = get_user_model()
@@ -285,6 +287,90 @@ class AdminCouponViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAdminUser,)
     lookup_field = "code"
     lookup_value_regex = r"[\w\-]+"
+
+
+# =======================================================================
+# Ana sayfa bannerları (EkimTablo kalıbı: panelden yönetilen slider)
+# =======================================================================
+def _safe_banner_link(link: str) -> str:
+    """Yalnız site içi (/) veya http(s) linke izin ver — javascript: gibi şemaları düşür."""
+    u = (link or "").strip()
+    if u.startswith("/") and not u.startswith("//"):
+        return u
+    if u.lower().startswith(("http://", "https://")):
+        return u
+    return ""
+
+
+class HeroBannerSerializer(drf_serializers.ModelSerializer):
+    class Meta:
+        model = HeroBanner
+        fields = (
+            "id",
+            "image",
+            "image_mobile",
+            "title",
+            "link",
+            "sort_order",
+            "active",
+            "created_at",
+        )
+        read_only_fields = ("created_at",)
+
+    def validate(self, attrs):
+        # DRF, multipart/form girdide eksik boolean'ı HTML checkbox gibi False
+        # sayar — 'active' hiç gönderilmediyse yeni kayıtta model varsayılanı
+        # (True) geçerli olsun, güncellemede alan hiç dokunulmasın.
+        if "active" not in self.initial_data:
+            if self.instance is None:
+                attrs["active"] = True
+            else:
+                attrs.pop("active", None)
+        return attrs
+
+    def validate_link(self, value):
+        return _safe_banner_link(value)
+
+    def validate_image(self, value):
+        if value and value.size > 8 * 1024 * 1024:
+            raise drf_serializers.ValidationError("Görsel 8 MB'den büyük olamaz.")
+        return value
+
+    def validate_image_mobile(self, value):
+        if value and value.size > 8 * 1024 * 1024:
+            raise drf_serializers.ValidationError("Görsel 8 MB'den büyük olamaz.")
+        return value
+
+
+class AdminBannerViewSet(viewsets.ModelViewSet):
+    queryset = HeroBanner.objects.all()
+    serializer_class = HeroBannerSerializer
+    permission_classes = (permissions.IsAdminUser,)
+    parser_classes = (JSONParser, FormParser, MultiPartParser)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def banners_public(request):
+    """Vitrindeki slider — yalnız aktif bannerlar, sıralı, en fazla 10."""
+    rows = HeroBanner.objects.filter(active=True)[:10]
+    def _abs(f):
+        return request.build_absolute_uri(f.url) if f else None
+    return Response(
+        {
+            "banners": [
+                {
+                    "id": b.id,
+                    "image": _abs(b.image),
+                    "imageMobile": _abs(b.image_mobile),
+                    "title": b.title,
+                    "link": _safe_banner_link(b.link),
+                }
+                for b in rows
+                if b.image
+            ]
+        }
+    )
 
 
 # =======================================================================

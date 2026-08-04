@@ -115,3 +115,37 @@ class ContactMessage(TimestampedModel):
         verbose_name = _("İletişim mesajı")
         verbose_name_plural = _("İletişim mesajları")
         ordering = ("-created_at",)
+
+
+class HeroBanner(TimestampedModel):
+    """Ana sayfa banner şeridi — panelden yönetilir, sıralı döner (EkimTablo kalıbı)."""
+
+    image = models.ImageField(
+        upload_to="banners/",
+        help_text="Yatay kampanya görseli — önerilen ~1600x500 (masaüstü şerit)",
+    )
+    image_mobile = models.ImageField(
+        upload_to="banners/",
+        blank=True,
+        null=True,
+        help_text=(
+            "Dar ekran görseli — önerilen ~1200x600 (2:1). Boş bırakılırsa "
+            "masaüstü görseli kırpılarak kullanılır ve kenardaki yazılar kesilebilir."
+        ),
+    )
+    title = models.CharField(
+        max_length=140, blank=True, help_text="Erişilebilirlik/alt metni; görselin üzerine yazılmaz"
+    )
+    link = models.CharField(
+        max_length=300, blank=True, help_text="Tıklanınca gidilecek yol, ör. /kategori/oyuncak"
+    )
+    sort_order = models.IntegerField(default=0)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ("sort_order", "id")
+        verbose_name = _("Ana sayfa banner")
+        verbose_name_plural = _("Ana sayfa bannerları")
+
+    def __str__(self) -> str:
+        return self.title or f"Banner #{self.pk}"

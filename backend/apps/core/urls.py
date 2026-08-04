@@ -2,6 +2,7 @@ from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .admin_views import (
+    AdminBannerViewSet,
     AdminContactViewSet,
     AdminCouponViewSet,
     AdminNewsletterViewSet,
@@ -10,6 +11,7 @@ from .admin_views import (
     admin_stock,
     admin_stock_update,
     contact_submit,
+    banners_public,
     dashboard_stats,
     newsletter_subscribe,
     notifications_list,
@@ -18,6 +20,7 @@ from .admin_views import (
 )
 
 router = DefaultRouter()
+router.register(r"admin/banners", AdminBannerViewSet, basename="admin-banner")
 router.register(r"admin/coupons", AdminCouponViewSet, basename="admin-coupon")
 router.register(r"admin/settings", AdminSettingViewSet, basename="admin-setting")
 router.register(r"admin/contact-messages", AdminContactViewSet, basename="admin-contact")
@@ -33,6 +36,7 @@ urlpatterns = [
     path("notifications/mark-all-read/", notifications_mark_all_read, name="notifications-read-all"),
     path("newsletter/subscribe/", newsletter_subscribe, name="newsletter-subscribe"),
     path("contact/", contact_submit, name="contact-submit"),
+    path("banners/", banners_public, name="banners-public"),
 ]
 
 urlpatterns += router.urls
